@@ -1,0 +1,226 @@
+# Percolate 
+## Introduction
+
+Percolate allows users to build and use a network of functions. Any update to a function in this network propagates to all functions dependant on it. A function has specified inputs and outputs that create an appropriate GUI element automatically. The Functions in the network can be nested in a top level Function that determines how the data percolates through the Subfunctions. 
+
+![Overview Animation](Images/Overview.png)
+
+
+## Installation
+To install percolate open the command line and type
+```
+https://github.com/AlistairChild/Percolate.git
+```
+To run the GUI type 
+```
+percolate
+```
+## Keywords
+The text that follows will use the following keywords.
+
+| Keyword      | Description |
+| ----------- | ----------- |
+| **Function**      | :     This is the top level Function that determines how data percolates through subfunctions.      |
+| **Subfunction**  | :     This refers to functions within the top level Function.     |
+| **Toolkit**   | :     Functions used by the subfunctions to do mathematical manipulations.        |
+
+
+
+## Usage
+
+A **Function** will display its inputs and outputs as a GUI elements. Any change to an input will cause the **Function** to evaluate thereby updating the outputs. The animation below shows the example "SinGen" **Function**, where moving the frequency input updates the sin output. 
+
+
+![SinGen animation](Images/sin.gif)
+
+
+
+```python
+class SinGen(Function):
+    '''
+    This create a sin function where the user can alter the frequency and amplitude
+    '''
+    def __init__(self):
+    
+        super().__init__("SinGen")
+        
+        #ports
+        self.frequency = free_int_input(self, "freq", 1, 5, 99)
+        self.amplitude = free_int_input(self, "amp", 0, 1, 100)
+        self.sin = ArrayOutput(self, "sin", self.read_sin)
+        
+        #declare inputs and outputs
+        self.inputs = [
+            self.frequency,
+            self.amplitude,
+        ]
+        self.outputs = [
+            self.sin,
+        ]
+        
+    def evaluate(self):
+
+        self.time = np.linspace(0, 1, 100)
+        self.sin_calc = self.amplitude.default/100 * np.sin(2* np.pi * self.frequency.default/10 * self.time)  
+        
+    def read_sin(self):
+        return {"data" : [self.time, self.sin_calc, None], "label": "s"}
+
+function = SinGen()
+```
+The top level **Function** can contain nested **Functions** refered to as **Subfunctions**. These can be linked together into a network defined in the top level **Function**. This can be seen by looking at convolving the "SinGen" **Function** with a SquareGen **Function** as seen below
+
+
+
+
+![convolution animation](Images/conv.gif)
+
+
+
+
+```python
+class SinSquareConv(CompositeFn):
+    '''
+    This Function contains 3 Subfunctions allowing a sin wave to be convolved with a square wave.
+    
+    '''
+    def __init__(self):
+    
+        super().__init__("SinSquareConv")
+        
+        #subfunctions used in this function
+        sin = SinGen()
+        square = SquareGen()
+        conv = convolve()
+
+        #subfns
+        self.subfns.append(sin)
+        self.subfns.append(square)
+        self.subfns.append(conv)
+        
+        #edges used for passing data from the output of one function to the input of another
+        self.edges.append(Edge(sin.sin, conv.A))
+        self.edges.append(Edge(square.square, conv.B))
+        
+function = SinSquareConv()
+
+```
+**Functions** may be nested arbitrarily to generate much more powerful and useful functions. Below we see the "XMCD_SumRule" example **Function** used for in depth analysis of "X-ray Magnetic Circular Dicroism" data. Changes made to the input of a **Function** cause it to evaluate itself and update its outputs. This will propagate through the network of **Subfunctions** causing all dependancys to evaluate and update.
+
+
+![Usage animation](Images/step.gif)
+```python
+class XMCD_SumRules(CompositeFn):
+    '''
+    This function is used for analysis of x-ray magnetic 
+    circular dichroism (XMCD) data using the Sum Rules to
+    extract orbital and spin moments of a material.
+    
+    '''
+    def __init__(self):
+    
+        super().__init__("SumRules")
+        
+        #subfunctions used in this function
+        dr = DirReader()
+        p = XMCDStreamParser()
+        bs = background_subtraction()
+        norm = Normalise()
+        step = step_subtraction()
+        sumrules = SumRules()
+        
+        #composite subfunctions used
+        xmcd_c = Xmcd_c(step, sumrules)
+        xas_c = Xas_c(step, sumrules)
+        
+        #subfns used to fill the Tree control
+        self.subfns.append(dr)
+        self.subfns.append(p)
+        self.subfns.append(bs)
+        self.subfns.append(norm)
+        self.subfns.append(step)
+        self.subfns.append(xmcd_c)
+        self.subfns.append(xas_c)
+        self.subfns.append(sumrules)
+
+        #edges used for passing data from the output of one function to the input of another
+        self.edges.append(Edge(dr.dir_contents, p.input))
+        self.edges.append(Edge(p.t_a_all, bs.t_a_all))
+        self.edges.append(Edge(p.t_p_all, bs.t_p_all))
+        self.edges.append(Edge(bs.a_p_background_subtracted, norm.t_p_all))
+        self.edges.append(Edge(bs.a_a_background_subtracted, norm.t_a_all))
+        self.edges.append(Edge(norm.a_p_norm, step.a_p_norm))
+        self.edges.append(Edge(norm.a_a_norm, step.a_a_norm))
+
+function = XMCD_SumRules()
+```
+
+A **Subfunction** in the top level **Function** can also nest multiple **Subfunctions** allowing for recursive detail. 
+
+
+## Lines
+Vertical lines can be helpful as a graphical tool. To introduce them in the simple SinGen **Function** you have to pass them with the data object 
+
+```python
+class SinGen(Function):
+    '''
+    This create a sin function where the user can alter the frequency and amplitude
+    '''
+    def __init__(self):
+    
+        super().__init__("SinGen")
+        
+        #ports
+        self.frequency = free_int_input(self, "freq", 100, 200, 500)
+        self.amplitude = free_int_input(self, "amp", 0, 1, 100)
+        self.line1 = free_int_input(self, "line1", 0, 1, 100)
+        self.line2 = free_int_input(self, "line2", 0, 1, 100)
+        self.sin = ArrayOutput(self, "sin", self.read_sin)
+        
+        #declare inputs and outputs
+        self.inputs = [
+            self.frequency,
+            self.amplitude,
+            self.line1,
+            self.line2,
+        ]
+        self.outputs = [
+            self.sin,
+        ]
+        
+    def evaluate(self):
+
+        self.time = np.linspace(0, 100, 500)
+        self.sin_calc = self.amplitude.default* np.sin(2* np.pi * self.frequency.default/10 * self.time) 
+        self.lines = [self.line1.default, self.line2.default]
+        
+    def read_sin(self):
+        return {"data" : [self.time, self.sin_calc, self.lines], "label": "s"}
+
+function = SinGen()
+
+```
+
+
+![Lines animation](Images/lines.gif)
+
+## Ad hoc Plots
+
+To inspect the data in more detail you can utilise the Ad hoc plotting features:
+ - Double click on the minimal figure canvas to open a large static stackable plot.
+ - Navigate to the Plot menu item and open a canvas where you can drag and drop the data into teh canvas and get Dymanical data that responds to data changes as shown below
+
+![Ad hoc plot animation](Images/drag.gif)
+
+Tabs can be torn off and positioned as required, double clicking a tab return it to the tab bar. 
+
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
+
+
+## Authors and acknowledgment
+
+This project was developed by **Alistair Child** with many thanks to the project supervisor **Niladri Banerjee** for providing excellent physics knowledge and data to analyse for this project. 

@@ -9,7 +9,7 @@ Percolate allows users to build and use a network of functions. Any update to a 
 ## Installation
 To install percolate open the command line and type
 ```
-https://github.com/AlistairChild/Percolate.git
+python -m pip install git+https://github.com/AlistairChild/Percolate.git
 ```
 To run the GUI type 
 ```

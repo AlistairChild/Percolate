@@ -72,24 +72,29 @@ class FindValue(Function):
         return return_path
 
     def evaluate(self):
+    
+        x = np.array(self.inputarray.read()["data"][0])
+        y = np.array(self.inputarray.read()["data"][1])
+    
+        if self.lookup.default:
 
-        if len(np.array(self.inputarray.read()["data"][1]).shape) > 1:
-            n_files = len(np.array(self.inputarray.read()["data"][1]))
+            if x.ndim and y.ndim == 1:
+    
+                value = [y[find_array_equivalent(x, self.lookup.default)]]
+        
+        
+            elif x.ndim and y.ndim == 2:
+            
+                value = []
+                for i in range(x.shape[0]):
+                    
+                    value_i = y[i][
+                        find_array_equivalent(x[i], self.lookup.default)
+                    ]
+                    value.append(value_i)
         else:
-            n_files = 1
-
-        value = []
-
-        for i in range(n_files):
-            try:
-                value_i = self.inputarray.read()["data"][1][i][
-                    find_array_equivalent(
-                        self.inputarray.read()["data"][0][i], self.lookup.default
-                    )
-                ]
-                value.append(value_i)
-            except:
-                value = None
+            value = None
+            
 
         self.value = value
         self.lines = [self.lookup.default]

@@ -373,12 +373,12 @@ class MaxPlotControl(OutputControlBase):
             "red",
             "green",
             "orange",
-            "orange",
-            "green",
-            "red",
-            "brown",
-            "black",
+            "turquoise",
+            "pink",
             "blue",
+            "black",
+            "red",
+            "green",
             "orange",
             "pink",
             "purple",
@@ -392,9 +392,37 @@ class MaxPlotControl(OutputControlBase):
             "yellow",
             "green",
             "orange",
+            "blue",
             "black",
             "brown",
             "red",
+            "yellow",
+            "green",
+            "orange",
+            "turquoise",
+            "pink",
+            "blue",
+            "black",
+            "red",
+            "green",
+            "orange",
+            "pink",
+            "purple",
+            "black",
+            "red",
+            "blue",
+            "blue",
+            "black",
+            "brown",
+            "red",
+            "yellow",
+            "green",
+            "orange",
+            "blue",
+            "black",
+            "brown",
+            "red",
+            "yellow",
             "green",
             "orange",
             "turquoise",
@@ -432,10 +460,10 @@ class MaxPlotControl(OutputControlBase):
             count = count + 1
 
             if x is not None and len(x.shape) > 1:
-
+                count = 0
                 # for item in x:
                 for x_data, y_data, label in zip(x, y, lbl):
-
+                    count = count+1
                     try:
 
                         for line in lines:
@@ -665,9 +693,11 @@ class MinimalPlotControl(OutputControlBase):
         lines = np.array(self.port.read()["data"][2])
 
         lbl = list(self.port.read()["label"])
-
+        
+        
+        
         if x.ndim and y.ndim == 1:
-
+            
             try:
 
                 for line in lines:
@@ -683,10 +713,10 @@ class MinimalPlotControl(OutputControlBase):
             self.canvas.lines = a.plot(x, y, color=colors[0], label=lbl)
 
         if x.ndim and y.ndim == 2:
-
+            count = 0
             for xi, yi, label in zip(x, y, lbl):
-
-                # if xi.all() and yi.all():
+                count = count + 1
+                
 
                 if lines.any():
                     for line in lines:
@@ -695,7 +725,7 @@ class MinimalPlotControl(OutputControlBase):
                 else:
                     pass
 
-                self.canvas.lines = a.plot(xi, yi, color=colors[0], label=label)
+                self.canvas.lines = a.plot(xi, yi, color=colors[count], label=label)
 
             if x.ndim == 3:
 
@@ -869,9 +899,9 @@ class TextControl(OutputControlBase):
 
         ##if len(np.array(self.port.read()).shape) > 1:
         if self.port.read()["data"][1]:
-
-            for item in self.port.read()["data"][1]:
-
+            
+            for item in list(self.port.read()["data"][1]):
+    
                 self.ctrl.write("%f" % item + "\n")
 
         self.ctrl.ShowPosition(0)

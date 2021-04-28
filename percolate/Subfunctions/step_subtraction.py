@@ -180,15 +180,15 @@ class step_subtraction(Function):
         fittype = arguments.fit_type
 
         if arguments.apply_step == "off":
-            x = x
-            y = y
-            step = make_zero_array(x)
+            x_return = x
+            y_return = y
+            step_return = make_zero_array(x)
 
         elif arguments.apply_step == "on":
 
             if np.array(y).ndim and np.array(x).ndim == 1:
 
-                x, y, step = step3(x, y, start, intermediate, stop, function, fittype)
+                x_return, y_return, step_return = step3(x, y, start, intermediate, stop, function, fittype)
 
             elif np.array(y).ndim and np.array(x).ndim == 2:
 
@@ -204,8 +204,19 @@ class step_subtraction(Function):
                     ylist.append(yi)
                     steplist.append(stepi)
 
-                x = np.array(xlist)
-                y = np.array(ylist)
-                step = np.array(steplist)
+                x_return = np.array(xlist)
+                y_return = np.array(ylist)
+                step_return = np.array(steplist)
+            else:
+                print("not 1 or 2 dimensions")
+                x_return = x
+                y_return = y
+                step_return = make_zero_array(x)
+        else:
+            print("else, what")
+            x_return = x
+            y_return = y
+            step_return = make_zero_array(x)
+            
 
-        return x, y, step
+        return x_return, y_return, step_return

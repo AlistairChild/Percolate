@@ -63,7 +63,13 @@ class SquareGen(Function):
         self.outputs = [
             self.square,
         ]
+        
+    def getpath(self, name):
 
+        return_path = str(self) + "/" + str(name)
+
+        return return_path
+        
     def evaluate(self):
 
         self.time = np.linspace(0, 1, 500)

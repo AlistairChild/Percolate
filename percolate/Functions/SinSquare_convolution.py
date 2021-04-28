@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 from scipy import signal
 import numpy as np
+
 from percolate.framework import Port
 from percolate.framework import InPort
 from percolate.framework import OutPort
@@ -42,7 +43,8 @@ from percolate.framework import CompositeFn
 
 from percolate.Functions.Sin_Gen import SinGen
 from percolate.Functions.Square_Gen import SquareGen
-from percolate.Functions.Convolve import convolve
+from percolate.Subfunctions.Convolve import convolve
+from percolate.Subfunctions.Addition import addition
 
 # Applications Functions
 class SinSquareConv(CompositeFn):
@@ -58,7 +60,7 @@ class SinSquareConv(CompositeFn):
         # subfunctions used in this function
         sin = SinGen()
         square = SquareGen()
-        conv = convolve()
+        conv = addition()
 
         # subfns
         self.subfns.append(sin)

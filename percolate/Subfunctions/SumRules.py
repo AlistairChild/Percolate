@@ -54,7 +54,7 @@ class SumRules(Function):
         self.q = StreamInput(self, "q")
         self.r = StreamInput(self, "r")
 
-        self.ratio = TextOutput(self, "ratio", self.read_ratio)
+        self.ratio = TextOutput(self, "ratio ", self.read_ratio)
         self.orbitalmoment = TextOutput(self, "orbital moment", self.read_orbitalmoment)
         self.spinmoment = TextOutput(self, "spin moment", self.read_spinmoment)
 
@@ -69,35 +69,57 @@ class SumRules(Function):
             self.orbitalmoment,
             self.spinmoment,
         ]
+        self.p
 
     def evaluate(self):
 
         n3d = 7.51
 
-        if len(self.p.read()["data"][1]) > 1:
-            n_files = len(self.p.read()["data"][1])
+        
+        valuep = self.p.read()["data"][1]
+        valueq = self.q.read()["data"][1]
+        valuer = self.r.read()["data"][1]
+            
+        if valuep and valuep and valuep != None:
+            
+            if len(valuep) == 1:
+            
+                p = float(valuep[0])
+                q = float(valueq[0])
+                r = float(valuer[0])
+        
+                # sum rules
+                ratio = [2 * q / ((9 * p) - (6 * q))]
+                orbital = [-((4 * q) * (10 - n3d)) / (3 * r)]
+                spin = [-((6 * p - 4 * q) * (10 - n3d)) / r]
+                
+            else:
+            
+                ratio = []
+                spin = []
+                orbital = []
+                
+                for i in range(np.array(valuep).shape[0]):
+                    # local variables
+                    p = float(valuep[i])
+                    q = float(valueq[i])
+                    r = float(valuer[i])
+            
+                    # sum rules
+                    ratio_i = 2 * q / ((9 * p) - (6 * q))
+                    orbital_i = -((4 * q) * (10 - n3d)) / (3 * r)
+                    spin_i = -((6 * p - 4 * q) * (10 - n3d)) / r
+            
+                    # append
+                    ratio.append(ratio_i)
+                    orbital.append(orbital_i)
+                    spin.append(spin_i)
         else:
-            n_files = 1
-
-        ratio = []
-        spin = []
-        orbital = []
-
-        for i in range(n_files):
-            # local variables
-            p = float(self.p.read()["data"][1][i])
-            q = float(self.q.read()["data"][1][i])
-            r = float(self.r.read()["data"][1][i])
-
-            # sum rules
-            ratio_i = 2 * q / ((9 * p) - (6 * q))
-            orbital_i = -((4 * q) * (10 - n3d)) / (3 * r)
-            spin_i = -((6 * p - 4 * q) * (10 - n3d)) / r
-
-            # append
-            ratio.append(ratio_i)
-            orbital.append(orbital_i)
-            spin.append(spin_i)
+            ratio = None
+            spin = None
+            orbital = None
+            
+            
 
         self.ratio = ratio
         self.spin = spin

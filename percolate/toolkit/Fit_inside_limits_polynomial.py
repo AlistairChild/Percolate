@@ -29,75 +29,43 @@ def calculate_results(x, y, upperx, lowerx, power):
 
     """Taking the x and y coordinates and the upper and lower x energies to fit"""
 
-    if y.ndim == 1:
+    
 
-        arr_lower_lim = find_array_equivalent(x, lowerx)
-        arr_upper_lim = find_array_equivalent(x, upperx)
+    arr_lower_lim = find_array_equivalent(x, lowerx)
+    arr_upper_lim = find_array_equivalent(x, upperx)
 
-        if arr_upper_lim <= arr_lower_lim:
+    if arr_upper_lim <= arr_lower_lim:
 
-            x_cut = x[arr_upper_lim:arr_lower_lim]
-            y_cut = y[arr_upper_lim:arr_lower_lim]
+        x_cut = x[arr_upper_lim:arr_lower_lim]
+        y_cut = y[arr_upper_lim:arr_lower_lim]
 
-        elif arr_lower_lim < arr_upper_lim:
+    elif arr_lower_lim < arr_upper_lim:
 
-            x_cut = x[arr_lower_lim:arr_upper_lim]
-            y_cut = y[arr_lower_lim:arr_upper_lim]
+        x_cut = x[arr_lower_lim:arr_upper_lim]
+        y_cut = y[arr_lower_lim:arr_upper_lim]
 
-        a_poly = np.polyfit(x_cut, y_cut, power)
-        a_polygen = np.poly1d(a_poly)
-        ia_bg = [a_polygen(e) for e in x]
+    a_poly = np.polyfit(x_cut, y_cut, power)
+    a_polygen = np.poly1d(a_poly)
+    ia_bg = [a_polygen(e) for e in x]
 
-        a_bg = np.array(ia_bg)
-        a_p_norm = y - a_bg
+    a_bg = np.array(ia_bg)
+    a_p_norm = y - a_bg
+    x_return = x
+    
 
-    elif y.ndim == 2:
+        
 
-        a_p_norm = []
-        a_bg = []
-
-        for i in range(absorption.ndim):
-
-            arr_lower_lim = find_array_equivalent(x[i], lowerlimit)
-            arr_upper_lim = find_array_equivalent(x[i], upperlimit)
-
-            if arr_upper_lim <= arr_lower_lim:
-
-                x_cut = x[i][arr_upper_lim:arr_lower_lim]
-                y_cut = y[i][arr_upper_lim:arr_lower_lim]
-
-            elif arr_lower_lim < arr_upper_lim:
-
-                x_cut = x[i][arr_lower_lim:arr_upper_lim]
-                y_cut = y[i][arr_lower_lim:arr_upper_lim]
-
-            a_poly = np.polyfit(x_cut, y_cut, power)
-            a_polygen = np.poly1d(a_poly)
-            ia_bg = [a_polygen(e) for e in x[i]]
-            ia_bg = np.array(ia_bg)
-
-            ia_p_norm = np.array(y[i]) - np.array(ia_bg)
-            a_p_norm.append(ia_p_norm)
-            a_bg.append(ia_bg)
-
-        a_p_norm = np.array(a_p_norm)
-        a_bg = np.array(a_bg)
-
-    elif absorption.ndim == 3:
-
-        print("There seems to be 3 dimensional data")
-
-    return x, a_p_norm, a_bg
+    return x_return, a_p_norm, a_bg
 
 
 def Fit_inside_limits_polynomial(
     x: np.ndarray, y: np.ndarray, lowerx: float, upperx: float, power: int
 ):
 
-    if lowerx and upperx and power and x.all() and y.all():
 
+    if lowerx and upperx and power and x.any() and y.any():
+    
         return calculate_results(x, y, lowerx, upperx, power)
 
     else:
-
         return x, y, make_zero_array(x)

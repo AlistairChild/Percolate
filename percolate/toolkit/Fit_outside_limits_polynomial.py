@@ -62,7 +62,7 @@ def Fit_outside_limits_polynomial(
     x: np.ndarray, y: np.ndarray, lowerx: float, upperx: float, power: int
 ):
 
-    if lowerx and upperx and power and x.all() and y.all():
+    if lowerx and upperx and power and x.any() and y.any():
 
         return calculate_results1(x, y, lowerx, upperx, power)
 

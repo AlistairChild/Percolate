@@ -1559,8 +1559,18 @@ def package_contents(package_name):
     files = []
 
     for module in os.listdir(pathname):
+    
+        if module == "__pycache__":
+        
+            pass
+            
+        elif module == "__init__.py":
+        
+            pass
+            
+        else:
 
-        files.append(module)
+            files.append(module)
 
     return files
 

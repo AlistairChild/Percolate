@@ -353,6 +353,7 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
                 lowerx=lowerx,
                 upperx=upperx,
                 power=power,
+                offset =offset,
             )
 
     elif x.ndim and y.ndim == 2:

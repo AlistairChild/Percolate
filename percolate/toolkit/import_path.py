@@ -30,10 +30,9 @@ def import_path(path):
         module_name, importlib.machinery.SourceFileLoader(module_name, path)
     )
     module = importlib.util.module_from_spec(spec)
-    print("called before")
-    # this line is calling the MyApp again
+
     spec.loader.exec_module(module)
-    print("called after")
+
     sys.modules[module_name] = module
 
     return module

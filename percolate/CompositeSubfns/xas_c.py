@@ -84,7 +84,7 @@ class Xas_c(CompositeFn):
             self.edges.append(Edge(inputs.a_a_step_subtracted, bs_xas.t_a_all))
             self.edges.append(Edge(inputs.a_p_step_subtracted, bs_xas.t_p_all))
 
-            self.edges.append(Edge(bs_xas.a_p_background_subtracted, ad.A))
+            self.edges.append(Edge(bs_xas.a_a_background_subtracted, ad.A))
             self.edges.append(Edge(bs_xas.a_p_background_subtracted, ad.B))
 
             self.edges.append(Edge(ad.added, intgr_xas.input))

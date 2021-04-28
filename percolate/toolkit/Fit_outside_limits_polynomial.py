@@ -25,7 +25,7 @@ from percolate.toolkit.find_array_equivalent import find_array_equivalent
 from percolate.toolkit.make_zero_array import make_zero_array
 
 
-def calculate_results1(x, y, lowerx, upperx, power):
+def calculate_results1(x, y, lowerx, upperx, power, offset):
 
     """Taking the x and y coordinates and the upper and lower x energies to fit"""
 
@@ -34,15 +34,34 @@ def calculate_results1(x, y, lowerx, upperx, power):
         arr_lower_lim = int(find_array_equivalent(x, lowerx))
         arr_upper_lim = int(find_array_equivalent(x, upperx))
 
-        if arr_lower_lim <= arr_upper_lim:
+        if offset == "off":
 
-            x_cut = np.concatenate((x[:arr_lower_lim], x[arr_upper_lim:]), axis=0)
-            y_cut = np.concatenate((y[:arr_lower_lim], y[arr_upper_lim:]), axis=0)
+            if arr_lower_lim <= arr_upper_lim:
 
-        elif arr_lower_lim > arr_upper_lim:
+                x_cut = np.concatenate((x[:arr_lower_lim], x[arr_upper_lim:]), axis=0)
+                y_cut = np.concatenate((y[:arr_lower_lim], y[arr_upper_lim:]), axis=0)
 
-            x_cut = np.concatenate((x[:arr_upper_lim], x[arr_lower_lim:]), axis=0)
-            y_cut = np.concatenate((y[:arr_upper_lim], y[arr_lower_lim:]), axis=0)
+            elif arr_lower_lim > arr_upper_lim:
+
+                x_cut = np.concatenate((x[:arr_upper_lim], x[arr_lower_lim:]), axis=0)
+                y_cut = np.concatenate((y[:arr_upper_lim], y[arr_lower_lim:]), axis=0)
+        else:
+
+            offset = y[arr_lower_lim] - y[arr_upper_lim]
+
+            if arr_lower_lim <= arr_upper_lim:
+
+                x_cut = np.concatenate((x[:arr_lower_lim], x[arr_upper_lim:]), axis=0)
+                y_cut = np.concatenate(
+                    (y[:arr_lower_lim], y[arr_upper_lim:] + offset), axis=0
+                )
+
+            elif arr_lower_lim > arr_upper_lim:
+
+                x_cut = np.concatenate((x[:arr_upper_lim], x[arr_lower_lim:]), axis=0)
+                y_cut = np.concatenate(
+                    (y[:arr_upper_lim], y[arr_lower_lim:] + offset), axis=0
+                )
 
         a_poly = np.polyfit(x_cut, y_cut, power)
         a_polygen = np.poly1d(a_poly)
@@ -59,12 +78,12 @@ def calculate_results1(x, y, lowerx, upperx, power):
 
 
 def Fit_outside_limits_polynomial(
-    x: np.ndarray, y: np.ndarray, lowerx: float, upperx: float, power: int
+    x: np.ndarray, y: np.ndarray, lowerx: float, upperx: float, power: int, offset: str
 ):
 
-    if lowerx and upperx and power and x.any() and y.any():
+    if lowerx and upperx and power and x.any() and y.any() and offset:
 
-        return calculate_results1(x, y, lowerx, upperx, power)
+        return calculate_results1(x, y, lowerx, upperx, power, offset)
 
     else:
 

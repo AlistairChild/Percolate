@@ -104,6 +104,7 @@ from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
 from matplotlib.figure import Figure
+
 import numpy as np
 import matplotlib.pyplot as pl
 import math
@@ -463,7 +464,7 @@ class MaxPlotControl(OutputControlBase):
                 count = 0
                 # for item in x:
                 for x_data, y_data, label in zip(x, y, lbl):
-                    count = count+1
+                    count = count + 1
                     try:
 
                         for line in lines:
@@ -693,11 +694,9 @@ class MinimalPlotControl(OutputControlBase):
         lines = np.array(self.port.read()["data"][2])
 
         lbl = list(self.port.read()["label"])
-        
-        
-        
+
         if x.ndim and y.ndim == 1:
-            
+
             try:
 
                 for line in lines:
@@ -716,7 +715,6 @@ class MinimalPlotControl(OutputControlBase):
             count = 0
             for xi, yi, label in zip(x, y, lbl):
                 count = count + 1
-                
 
                 if lines.any():
                     for line in lines:
@@ -899,9 +897,9 @@ class TextControl(OutputControlBase):
 
         ##if len(np.array(self.port.read()).shape) > 1:
         if self.port.read()["data"][1]:
-            
+
             for item in list(self.port.read()["data"][1]):
-    
+
                 self.ctrl.write("%f" % item + "\n")
 
         self.ctrl.ShowPosition(0)
@@ -916,7 +914,10 @@ class NumberControl(InputControlBase):
         self.value = target_port
 
         self.ctrl = wx.TextCtrl(
-            parent, value="1", name=target_port.name, style=wx.TE_PROCESS_ENTER
+            parent,
+            value=str(round(float(target_port.default), 2)),
+            name=target_port.name,
+            style=wx.TE_PROCESS_ENTER,
         )
 
         self.ctrl.name = target_port.name
@@ -1086,11 +1087,31 @@ class CheckControl(InputControlBase):
         return self.state
 
 
+class Equation_display:
+    def __init__(self, parent, fgs, port):
+
+        self.fig = Figure((2, 0.5), 75)
+
+        self.canvas = FigureCanvas(parent, -1, self.fig)
+
+        self.fig.text(0.05, 0.5, "$%s$" % port.name, size=10)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.canvas.draw()
+
+        sizer.Add(self.canvas, 7, wx.ALIGN_CENTRE | wx.LEFT)
+
+        fgs.Add(sizer, 0, wx.TOP | wx.EXPAND)
+
+
 class PortControl:
     def __init__(self, parent, fgs, port, func, aui_notebook, manager, app):
 
         self.port = port
 
+        # self.label = Equation_display(parent, fgs, port)
+        # self.label = fgs.Add(label)
         self.label = fgs.Add(wx.StaticText(parent, label=port.name))
 
         if isinstance(port, FilePathInput):
@@ -1369,9 +1390,20 @@ class MyApp(wx.App):
 
         # FuncCtrl(parent, func)
         for key, value in self.addedtabs.items():
+
             if value.func == evt_data:
+
+                print(evt_data)
+
                 print("exists")
+
                 return
+
+        for key, item in self.addedtabs.items():
+
+            if evt_name == key:
+
+                evt_name = evt_name + "1"
 
         self.addedtabs[evt_name] = FuncCtrl(
             self.main_frame.__auiNotebook,

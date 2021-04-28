@@ -41,8 +41,6 @@ from percolate.framework import Edge
 from percolate.framework import CompositeFn
 
 
-
-
 # Applications Functions
 class convolve(Function):
     """
@@ -67,11 +65,13 @@ class convolve(Function):
         self.outputs = [
             self.convolution,
         ]
+
     def getpath(self, name):
 
         return_path = str(self) + "/" + str(name)
 
         return return_path
+
     def evaluate(self):
 
         self.conv_calc = self.A.read()["data"][1] + self.B.read()["data"][1]

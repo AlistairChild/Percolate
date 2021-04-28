@@ -40,6 +40,7 @@ from percolate.framework import int_input
 from percolate.framework import bool_input
 from percolate.framework import choice_input
 from percolate.framework import Function
+from percolate.framework import num_input
 
 # Toolkit imports
 from percolate.toolkit.find_array_equivalent import find_array_equivalent
@@ -54,14 +55,23 @@ class SumRules(Function):
         self.q = StreamInput(self, "q")
         self.r = StreamInput(self, "r")
 
-        self.ratio = TextOutput(self, "ratio ", self.read_ratio)
-        self.orbitalmoment = TextOutput(self, "orbital moment", self.read_orbitalmoment)
-        self.spinmoment = TextOutput(self, "spin moment", self.read_spinmoment)
+        self.shell_occupation = num_input(self, "shell_occupation", self.p, 7.51)
+
+        self.ratio = TextOutput(self, r"ratio = \frac{2q} {9p - 6p}", self.read_ratio)
+        self.orbitalmoment = TextOutput(
+            self,
+            "orbital moment \frac{4 q} {3  r} * (10 - n3d) ",
+            self.read_orbitalmoment,
+        )
+        self.spinmoment = TextOutput(
+            self, "spin moment \frac{2q} {9p - 6p}", self.read_spinmoment
+        )
 
         self.inputs = [
             self.p,
             self.q,
             self.q,
+            self.shell_occupation,
         ]
 
         self.outputs = [
@@ -73,43 +83,42 @@ class SumRules(Function):
 
     def evaluate(self):
 
-        n3d = 7.51
+        n3d = self.shell_occupation.default
 
-        
         valuep = self.p.read()["data"][1]
         valueq = self.q.read()["data"][1]
         valuer = self.r.read()["data"][1]
-            
+
         if valuep and valuep and valuep != None:
-            
+
             if len(valuep) == 1:
-            
+
                 p = float(valuep[0])
                 q = float(valueq[0])
                 r = float(valuer[0])
-        
+
                 # sum rules
                 ratio = [2 * q / ((9 * p) - (6 * q))]
                 orbital = [-((4 * q) * (10 - n3d)) / (3 * r)]
                 spin = [-((6 * p - 4 * q) * (10 - n3d)) / r]
-                
+
             else:
-            
+
                 ratio = []
                 spin = []
                 orbital = []
-                
+
                 for i in range(np.array(valuep).shape[0]):
                     # local variables
                     p = float(valuep[i])
                     q = float(valueq[i])
                     r = float(valuer[i])
-            
+
                     # sum rules
                     ratio_i = 2 * q / ((9 * p) - (6 * q))
                     orbital_i = -((4 * q) * (10 - n3d)) / (3 * r)
                     spin_i = -((6 * p - 4 * q) * (10 - n3d)) / r
-            
+
                     # append
                     ratio.append(ratio_i)
                     orbital.append(orbital_i)
@@ -118,8 +127,6 @@ class SumRules(Function):
             ratio = None
             spin = None
             orbital = None
-            
-            
 
         self.ratio = ratio
         self.spin = spin

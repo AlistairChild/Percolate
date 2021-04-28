@@ -188,7 +188,9 @@ class step_subtraction(Function):
 
             if np.array(y).ndim and np.array(x).ndim == 1:
 
-                x_return, y_return, step_return = step3(x, y, start, intermediate, stop, function, fittype)
+                x_return, y_return, step_return = step3(
+                    x, y, start, intermediate, stop, function, fittype
+                )
 
             elif np.array(y).ndim and np.array(x).ndim == 2:
 
@@ -217,6 +219,5 @@ class step_subtraction(Function):
             x_return = x
             y_return = y
             step_return = make_zero_array(x)
-            
 
         return x_return, y_return, step_return

@@ -29,8 +29,6 @@ def calculate_results(x, y, upperx, lowerx, power):
 
     """Taking the x and y coordinates and the upper and lower x energies to fit"""
 
-    
-
     arr_lower_lim = find_array_equivalent(x, lowerx)
     arr_upper_lim = find_array_equivalent(x, upperx)
 
@@ -51,9 +49,6 @@ def calculate_results(x, y, upperx, lowerx, power):
     a_bg = np.array(ia_bg)
     a_p_norm = y - a_bg
     x_return = x
-    
-
-        
 
     return x_return, a_p_norm, a_bg
 
@@ -62,9 +57,8 @@ def Fit_inside_limits_polynomial(
     x: np.ndarray, y: np.ndarray, lowerx: float, upperx: float, power: int
 ):
 
-
     if lowerx and upperx and power and x.any() and y.any():
-    
+
         return calculate_results(x, y, lowerx, upperx, power)
 
     else:

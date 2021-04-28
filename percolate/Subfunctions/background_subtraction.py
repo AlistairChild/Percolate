@@ -72,7 +72,6 @@ class background_subtraction2(Function):
         # self.e = StreamInput(self, "e")
         self.input_data = StreamInput(self, "input_data")
 
-
         # input.changed += self.on_data
         # parameter inputs
 
@@ -141,8 +140,15 @@ class background_subtraction2(Function):
             self.x,
             self.calculated_subtracted_background,
             self.calculated_background,
-        ) = self.calculate_background(x, y, local_arguments.p_start, local_arguments.p_end,local_arguments.power,local_arguments.fit)
-
+        ) = calculate_background(
+            x,
+            y,
+            local_arguments.p_start,
+            local_arguments.p_end,
+            local_arguments.power,
+            local_arguments.fit,
+            local_arguments.apply_offset,
+        )
 
         self.lines = [self.p_start.default, self.p_end.default]
 
@@ -165,102 +171,6 @@ class background_subtraction2(Function):
             ],
             "label": self.input_data.read()["label"],
         }
-    def calculate_background(self, x, y, p_start, p_end,power, fit):
-    
-        x = np.array(x)
-        y = np.array(y)
-    
-        lowerx = p_start
-        upperx = p_end
-        power = power
-    
-        if x.ndim and y.ndim == 1:
-
-            if fit == "No fit":
-
-    
-                x = x
-                background = make_zero_array(x)
-                y = y - background
-    
-            elif fit == "Polynomial fit inside limits":
-
-                x, y, background = Fit_inside_limits_polynomial(
-                    x=x,
-                    y=y,
-                    lowerx=lowerx,
-                    upperx=upperx,
-                    power=power,
-                )
-    
-            elif fit == "Polynomial fit outside limits":
-
-    
-                x, y, background = Fit_outside_limits_polynomial(
-                    x=x,
-                    y=y,
-                    lowerx=lowerx,
-                    upperx=upperx,
-                    power=power,
-                )
-    
-        elif x.ndim and y.ndim == 2:
-
-    
-            n_files = x.shape[0]
-    
-            x_list = []
-            y_list = []
-            background_list = []
-    
-            if fit == "No fit":
-
-                for i in range(n_files):
-    
-                    xi = x[i]
-                    backgroundi = make_zero_array(x[i])
-                    yi = y[i] - backgroundi
-    
-                    x_list.append(xi)
-                    background_list.append(backgroundi)
-                    y_list.append(yi)
-    
-            elif fit == "Polynomial fit inside limits":
-
-                for i in range(n_files):
-    
-                    xi, yi, backgroundi = Fit_inside_limits_polynomial(
-                        x=x[i],
-                        y=y[i],
-                        lowerx=lowerx,
-                        upperx=upperx,
-                        power=power,
-                    )
-                    x_list.append(xi)
-                    background_list.append(backgroundi)
-                    y_list.append(yi)
-    
-            elif fit == "Polynomial fit outside limits":
-
-                for i in range(n_files):
-                    xi, yi, backgroundi = Fit_outside_limits_polynomial(
-                        x=x[i],
-                        y=y[i],
-                        lowerx=lowerx,
-                        upperx=upperx,
-                        power=power,
-                    )
-    
-                    x_list.append(xi)
-                    background_list.append(backgroundi)
-                    y_list.append(yi)
-    
-            x = np.array(x_list)
-            y = np.array(y_list)
-            background = np.array(background_list)
-
-    
-        return x, y, background
 
 
 class background_subtraction(Function):
@@ -357,12 +267,28 @@ class background_subtraction(Function):
             self.x1,
             self.calculated_subtracted_background1,
             self.calculated_background1,
-        ) = self.calculate_background(x1, y1, local_arguments.p_start,local_arguments.p_end,local_arguments.power,local_arguments.fit)
+        ) = calculate_background(
+            x1,
+            y1,
+            local_arguments.p_start,
+            local_arguments.p_end,
+            local_arguments.power,
+            local_arguments.fit,
+            local_arguments.apply_offset,
+        )
         (
             self.x2,
             self.calculated_subtracted_background2,
             self.calculated_background2,
-        ) = self.calculate_background(x2, y2, local_arguments.p_start,local_arguments.p_end,local_arguments.power,local_arguments.fit)
+        ) = calculate_background(
+            x2,
+            y2,
+            local_arguments.p_start,
+            local_arguments.p_end,
+            local_arguments.power,
+            local_arguments.fit,
+            local_arguments.apply_offset,
+        )
 
         self.lines = [self.p_start.default, self.p_end.default]
 
@@ -390,95 +316,98 @@ class background_subtraction(Function):
             "label": self.t_p_all.read()["label"],
         }
 
-    def calculate_background(self, x, y, p_start, p_end,power, fit):
-    
-        x = np.array(x)
-        y = np.array(y)
-    
-        lowerx = p_start
-        upperx = p_end
-        power = power
-    
-        if x.ndim and y.ndim == 1:
-            
-            if fit == "No fit":
-    
-                x = x
-                background = make_zero_array(x)
-                y = y - background
-    
-            elif fit == "Polynomial fit inside limits":
-    
-                x, y, background = Fit_inside_limits_polynomial(
-                    x=x,
-                    y=y,
+
+def calculate_background(x, y, p_start, p_end, power, fit, offset):
+
+    x = np.array(x)
+    y = np.array(y)
+
+    lowerx = p_start
+    upperx = p_end
+    power = power
+    offset = offset
+
+    if x.ndim and y.ndim == 1:
+
+        if fit == "No fit":
+
+            x = x
+            background = make_zero_array(x)
+            y = y - background
+
+        elif fit == "Polynomial fit inside limits":
+
+            x, y, background = Fit_inside_limits_polynomial(
+                x=x,
+                y=y,
+                lowerx=lowerx,
+                upperx=upperx,
+                power=power,
+            )
+
+        elif fit == "Polynomial fit outside limits":
+
+            x, y, background = Fit_outside_limits_polynomial(
+                x=x,
+                y=y,
+                lowerx=lowerx,
+                upperx=upperx,
+                power=power,
+            )
+
+    elif x.ndim and y.ndim == 2:
+
+        n_files = x.shape[0]
+
+        x_list = []
+        y_list = []
+        background_list = []
+
+        if fit == "No fit":
+
+            for i in range(n_files):
+
+                xi = x[i]
+                backgroundi = make_zero_array(x[i])
+                yi = y[i] - backgroundi
+
+                x_list.append(xi)
+                background_list.append(backgroundi)
+                y_list.append(yi)
+
+        elif fit == "Polynomial fit inside limits":
+
+            for i in range(n_files):
+
+                xi, yi, backgroundi = Fit_inside_limits_polynomial(
+                    x=x[i],
+                    y=y[i],
                     lowerx=lowerx,
                     upperx=upperx,
                     power=power,
                 )
-    
-            elif fit == "Polynomial fit outside limits":
-    
-                x, y, background = Fit_outside_limits_polynomial(
-                    x=x,
-                    y=y,
+                x_list.append(xi)
+                background_list.append(backgroundi)
+                y_list.append(yi)
+
+        elif fit == "Polynomial fit outside limits":
+
+            for i in range(n_files):
+                xi, yi, backgroundi = Fit_outside_limits_polynomial(
+                    x=x[i],
+                    y=y[i],
                     lowerx=lowerx,
                     upperx=upperx,
                     power=power,
+                    offset=offset,
                 )
-    
-        elif x.ndim and y.ndim == 2:
-    
-            n_files = x.shape[0]
-    
-            x_list = []
-            y_list = []
-            background_list = []
-    
-            if fit == "No fit":
-    
-                for i in range(n_files):
-    
-                    xi = x[i]
-                    backgroundi = make_zero_array(x[i])
-                    yi = y[i] - backgroundi
-    
-                    x_list.append(xi)
-                    background_list.append(backgroundi)
-                    y_list.append(yi)
-    
-            elif fit == "Polynomial fit inside limits":
-    
-                for i in range(n_files):
-    
-                    xi, yi, backgroundi = Fit_inside_limits_polynomial(
-                        x=x[i],
-                        y=y[i],
-                        lowerx=lowerx,
-                        upperx=upperx,
-                        power=power,
-                    )
-                    x_list.append(xi)
-                    background_list.append(backgroundi)
-                    y_list.append(yi)
-    
-            elif fit == "Polynomial fit outside limits":
-    
-                for i in range(n_files):
-                    xi, yi, backgroundi = Fit_outside_limits_polynomial(
-                        x=x[i],
-                        y=y[i],
-                        lowerx=lowerx,
-                        upperx=upperx,
-                        power=power,
-                    )
-    
-                    x_list.append(xi)
-                    background_list.append(backgroundi)
-                    y_list.append(yi)
-    
-            x = np.array(x_list)
-            y = np.array(y_list)
-            background = np.array(background_list)
-    
-        return x, y, background
+
+                x_list.append(xi)
+                background_list.append(backgroundi)
+                y_list.append(yi)
+
+        x = np.array(x_list)
+        y = np.array(y_list)
+        background = np.array(background_list)
+
+    return x, y, background

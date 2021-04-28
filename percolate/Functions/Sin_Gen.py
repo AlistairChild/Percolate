@@ -66,13 +66,13 @@ class SinGen(Function):
         self.outputs = [
             self.sin,
         ]
-        
+
     def getpath(self, name):
 
         return_path = str(self) + "/" + str(name)
 
         return return_path
-        
+
     def evaluate(self):
 
         self.time = np.linspace(0, 100, 500)

@@ -217,8 +217,6 @@ Tabs can be torn off and positioned as required, double clicking a tab return it
 
 ## License
 
-(C) Alistair Child
-
 Licenced under the [MIT Licence](LICENCE.md)
 
 Copyright (c) 2021 Alistair Child

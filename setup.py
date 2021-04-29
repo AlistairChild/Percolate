@@ -19,6 +19,8 @@ setup(
         "wxPython>=4.1.0",
         "matplotlib>=3.1.2",
         "lmfit>=1.0.0",
+        "pandas>=1.1.4",
+        
         
     ],  # more
     classifiers=[

@@ -17,6 +17,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
+
 import os
 import math
 import random
@@ -73,28 +74,6 @@ def fit_peaks_to_data(energy, intensity, args, fitting_params):
     # create spec with fitting_params dynamical
     spec = {"x": energy, "y": intensity, "model": fitting_params}
 
-    def update_spec_from_peaks(spec, model_indicies, peak_widths=(10, 25), **kwargs):
-        x = spec["x"]
-        y = spec["y"]
-        x_range = np.max(x) - np.min(x)
-        peak_indicies = signal.find_peaks_cwt(y, peak_widths)
-        np.random.shuffle(peak_indicies)
-        for peak_indicie, model_indicie in zip(peak_indicies.tolist(), model_indicies):
-            model = spec["model"][model_indicie]
-            if model["type"] in ["GaussianModel", "LorentzianModel", "VoigtModel"]:
-                params = {
-                    "height": y[peak_indicie],
-                    "sigma": x_range / len(x) * np.min(peak_widths),
-                    "center": x[peak_indicie],
-                }
-                if "params" in model:
-                    model.update(params)
-                else:
-                    model["params"] = params
-            else:
-                raise NotImplemented(f'model {basis_func["type"]} not implemented yet')
-        return peak_indicies
-
     def generate_model(spec):
         composite_model = None
         params = None
@@ -140,15 +119,16 @@ def fit_peaks_to_data(energy, intensity, args, fitting_params):
                 params.update(model_params)
 
             if composite_model is None:
+            
                 composite_model = model
 
             else:
                 composite_model = composite_model + model
 
-        return composite_model, params
+        return composite_model, params, model
 
-    model, params = generate_model(spec)
-    output = model.fit(spec["y"], params, x=spec["x"])
+    composite_model, params, model  = generate_model(spec)
+    output = composite_model.fit(spec["y"], params, x=spec["x"])
 
     # evaluate components of output
     comps = output.eval_components()
@@ -165,47 +145,3 @@ def fit_peaks_to_data(energy, intensity, args, fitting_params):
     return energy, output.best_fit
     # return components_energy, components
 
-
-"""
-
-
-    #model = Model(lorentzian_cdf, prefix='g2_') + Model(lorentzian_cdf, prefix='g3_')+ Model(lorentzian_cdf, prefix='g4_')+ Model(lorentzian_cdf, prefix='g5_')+ Model(lorentzian_cdf, prefix='g7_')#+ Model(lorentzian_cdf, prefix='g7_')#+ Model(lorentzian_cdf, prefix='g8_')+ Model(lorentzian_cdf, prefix='g9_')+ Model(lorentzian_cdf, prefix='g10_')+ Model(lorentzian_cdf, prefix='g11_')
-
-    # make a parameters object -- a dict with parameter names
-    # taken from the arguments of your model function and prefix
-    
-    
-    
-	params = model.make_params(#g1_amp=293, g1_mu=138, g1_sigma=10,
-                           g2_amp=0.6, g2_mu=307, g2_sigma=30,
-						  # g10_amp=20, g10_mu=348, g10_sigma=2,
-						   g3_amp=0.65, g3_mu=344, g3_sigma=30,
-						   g4_amp=1, g4_mu=381, g4_sigma=20,
-						   g5_amp=0.22, g5_mu=508, g5_sigma=30,
-						   #g6_amp=80, g6_mu=560, g6_sigma=20,
-						   g7_amp=0.15, g7_mu=675, g7_sigma=60.)
-						  # g7_amp=1140, g7_mu=344, g7_sigma=1.)
-						   #g8_amp=23, g8_mu=158, g8_sigma=2,
-						   #g10_amp=10, g10_mu=97, g10_sigma=2,
-						   #g11_amp=20, g11_mu=507, g11_sigma=2,
-						   #g9_amp=26, g9_mu=129, g9_sigma=2.)
-                           #g7_amp=0.01, g7_mu=440, g7_sigma=200.)
-
-# you can apply bounds to any parameter
-#params['g1_sigma'].min = 0   # sigma must be > 0!
-
-# you may want to fix the amplitudes to 0.5:
-#params['g1_amp'].vary = False
-#params['g2_amp'].vary = False
-
-# run the fit
-	result = model.fit(y_new, params, x=x_new)
-
-# print results
-	print(result.fit_report())
-
-# plot results, including individual components
-	comps = result.eval_components(result.params, x=x_new)
-	added_curves=comps['g2_']+comps['g3_']+comps['g4_']+comps['g5_']+comps['g7_']#+comps['g7_']
-    
-    """

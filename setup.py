@@ -18,6 +18,8 @@ setup(
         "scipy>=1.4.1",
         "wxPython>=4.1.0",
         "matplotlib>=3.1.2",
+        "lmfit>=1.0.0",
+        
     ],  # more
     classifiers=[
         "Programming Language :: Python :: 3",

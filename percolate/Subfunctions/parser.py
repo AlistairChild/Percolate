@@ -69,15 +69,7 @@ class EXAFSStreamParser(Function):
         self.e = ArrayOutput(self, "e", self.read_e)
         self.intensity = ArrayOutput(self, "intensity", self.read_intensity)
 
-        # declare
-        self.inputs = [
-            self.input,
-            self.average_data,
-        ]
-        self.outputs = [
-            self.e,
-            self.intensity,
-        ]
+
 
         self.e_data = None
         self.intensity_data = None

@@ -17,6 +17,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
+
 import numpy as np
 from percolate.framework import Port
 from percolate.framework import InPort
@@ -48,24 +49,14 @@ class SinGen(Function):
     def __init__(self):
 
         super().__init__("SinGen")
-
+        
         # ports
         self.frequency = free_int_input(self, "freq", 100, 200, 500)
         self.amplitude = free_int_input(self, "amp", 0, 1, 100)
         self.line1 = free_int_input(self, "line1", 0, 1, 100)
         self.line2 = free_int_input(self, "line2", 0, 1, 100)
         self.sin = ArrayOutput(self, "sin", self.read_sin)
-
-        # declare inputs and outputs
-        self.inputs = [
-            self.frequency,
-            self.amplitude,
-            self.line1,
-            self.line2,
-        ]
-        self.outputs = [
-            self.sin,
-        ]
+        
 
     def getpath(self, name):
 

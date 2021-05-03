@@ -64,9 +64,6 @@ class Multiplexer(Function):
 
         self.multiplot = ArrayOutput(self, "out", self.read_output)
 
-        self.outputs = [
-            self.multiplot,
-        ]
 
         self.a = None
 

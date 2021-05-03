@@ -65,18 +65,6 @@ class Area(Function):
         self.value = TextOutput(self, "value", self.read_value)
         self.graph = ArrayOutput(self, "graph", self.read_graph)
 
-        # declare
-        self.inputs = [
-            self.input,
-            self.start,
-            self.mid,
-            self.end,
-        ]
-
-        self.outputs = [
-            self.graph,
-            self.value,
-        ]
 
     def getpath(self, name):
 

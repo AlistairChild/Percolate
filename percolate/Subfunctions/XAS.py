@@ -79,20 +79,7 @@ class Xas(Function):
         self.xas_bg = ArrayOutput(self, "xas_bg", self.read_xas_bg)
         self.xas_integral = ArrayOutput(self, "xas_integral", self.read_xas_integral)
 
-        # port inputs
-        self.inputs = [
-            self.a_p_norm,
-            self.a_a_norm,
-            self.fit,
-            self.background_start,
-            self.background_stop,
-        ]
-        # port outputs
-        self.outputs = [
-            self.xas,
-            self.xas_bg,
-            self.xas_integral,
-        ]
+
 
     def getpath(self, name):
 

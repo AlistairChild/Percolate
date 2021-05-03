@@ -95,21 +95,7 @@ class single_step_subtraction_xanes(Function):
             self, "subtracted_step", self.read_subtracted_step
         )
 
-        # publish ports
-        self.inputs = [
-            self.input_array,
-            self.apply_step,
-            self.fit_function,
-            self.pre_feature_min,
-            self.pre_feature_max,
-            self.post_feature_min,
-            self.post_feature_max,
-        ]
 
-        self.outputs = [
-            self.stepfunction,
-            self.subtracted_step,
-        ]
 
     def getpath(self, name):
 

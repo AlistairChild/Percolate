@@ -57,14 +57,7 @@ class convolve(Function):
 
         self.convolution = ArrayOutput(self, "convolution", self.read_convolution)
 
-        # declare inputs and outputs
-        self.inputs = [
-            self.A,
-            self.B,
-        ]
-        self.outputs = [
-            self.convolution,
-        ]
+
 
     def getpath(self, name):
 

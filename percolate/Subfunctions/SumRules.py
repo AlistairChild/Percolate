@@ -67,19 +67,7 @@ class SumRules(Function):
             self, "spin moment \frac{2q} {9p - 6p}", self.read_spinmoment
         )
 
-        self.inputs = [
-            self.p,
-            self.q,
-            self.q,
-            self.shell_occupation,
-        ]
-
-        self.outputs = [
-            self.ratio,
-            self.orbitalmoment,
-            self.spinmoment,
-        ]
-        self.p
+        
 
     def evaluate(self):
 

@@ -50,14 +50,6 @@ class FileReader(Function):
         self.file_path = FilePathInput(self, "in")
         self.file_data = StreamOutput(self, "data", self.on_read)
 
-        # publish ports
-        self.inputs = [
-            self.file_path,
-        ]
-        self.outputs = [
-            self.file_data,
-        ]
-
         self.data = None
 
     def evaluate(self):

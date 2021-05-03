@@ -94,24 +94,6 @@ class step_subtraction(Function):
             self, "a_p_step_subtracted", self.read_a_p_step_subtracted
         )
 
-        # publish ports
-        self.inputs = [
-            self.a_p_norm,
-            self.a_a_norm,
-            self.apply_step,
-            self.fit_type,
-            self.fit_function,
-            self.step_start,
-            self.step_intermediate,
-            self.step_stop,
-        ]
-
-        self.outputs = [
-            self.a_a_stepfunction,
-            self.a_p_stepfunction,
-            self.a_a_step_subtracted,
-            self.a_p_step_subtracted,
-        ]
 
     def getpath(self, name):
 

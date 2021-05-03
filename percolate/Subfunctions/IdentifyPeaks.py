@@ -184,19 +184,7 @@ class IdentifyPeaks(Function):
         # output ports
         self.fitted_peaks = ArrayOutput(self, "fitted_peaks", self.read_fitted_peaks)
 
-        # publish ports
-        self.inputs = [
-            self.input_array,
-            self.number_of_peaks,
-            self.center_of_peaks,
-            self.sigma_of_peaks,
-            self.height_of_peaks,
-            self.type_of_peaks,
-        ]
 
-        self.outputs = [
-            self.fitted_peaks,
-        ]
 
     def getpath(self, name):
 

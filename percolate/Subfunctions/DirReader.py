@@ -55,13 +55,6 @@ class DirReader(Function):
         self.dir_path = DirPathInput(self, "in")
         self.dir_contents = StreamOutput(self, "data", self.read)
 
-        # publish ports
-        self.inputs = [
-            self.dir_path,
-        ]
-        self.outputs = [
-            self.dir_contents,
-        ]
 
         self.data = None
 

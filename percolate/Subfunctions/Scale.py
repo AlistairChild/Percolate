@@ -70,15 +70,7 @@ class scale(Function):
         # outputs
         self.scaled = ArrayOutput(self, "scaled", self.read_scaled)
 
-        # port declaration
-        self.inputs = [
-            self.input,
-            self.scale_value,
-        ]
 
-        self.outputs = [
-            self.scaled,
-        ]
 
     def getpath(self, name):
 

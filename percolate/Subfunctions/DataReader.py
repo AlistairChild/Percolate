@@ -51,13 +51,7 @@ class DataReader(Function):
         self.data_path = DataPathInput(self, "data_path")
         self.data = StreamOutput(self, "data", self.on_read)
 
-        # publish ports
-        self.inputs = [
-            self.data_path,
-        ]
-        self.outputs = [
-            self.data,
-        ]
+
 
         self.data_calc = None
 

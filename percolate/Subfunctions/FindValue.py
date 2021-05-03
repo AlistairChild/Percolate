@@ -54,16 +54,7 @@ class FindValue(Function):
         # output ports
         self.value = TextOutput(self, "value", self.read_value)
         self.graph = ArrayOutput(self, "graph", self.read_graph)
-        # declare
-        self.inputs = [
-            self.inputarray,
-            self.lookup,
-        ]
 
-        self.outputs = [
-            self.value,
-            self.graph,
-        ]
 
     def getpath(self, name):
 

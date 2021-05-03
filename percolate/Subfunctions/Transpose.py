@@ -73,15 +73,7 @@ class Transpose(Function):
             self, "transposed_data", self.read_transposed_data
         )
 
-        self.inputs = [
-            self.spectra,
-            self.action,
-            self.x_value_for_transpose,
-        ]
 
-        self.outputs = [
-            self.transposed_data,
-        ]
 
     def getpath(self, name):
         return_path = str(self) + "/" + name

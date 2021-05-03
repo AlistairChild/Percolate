@@ -83,20 +83,7 @@ class single_step_subtraction(Function):
             self, "post_step_a", self.read_subtracted_step
         )
 
-        # publish ports
-        self.inputs = [
-            self.input_array,
-            self.apply_step,
-            self.fit_function,
-            self.step_start,
-            self.step_stop,
-            self.edge,
-        ]
 
-        self.outputs = [
-            self.stepfunction,
-            self.subtracted_step,
-        ]
 
     def getpath(self, name):
 

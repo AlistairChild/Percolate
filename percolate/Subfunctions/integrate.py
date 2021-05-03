@@ -57,14 +57,7 @@ class Integrate(Function):
 
         self.integral = ArrayOutput(self, "integral", self.read_integral)
 
-        # declare
-        self.inputs = [
-            self.input,
-        ]
 
-        self.outputs = [
-            self.integral,
-        ]
 
     def getpath(self, name):
 

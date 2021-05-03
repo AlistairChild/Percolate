@@ -68,16 +68,7 @@ class difference(Function):
         # outputs
         self.diff = ArrayOutput(self, "diff", self.read_diff)
 
-        # port declaration
-        self.inputs = [
-            self.Reverse,
-            self.A,
-            self.B,
-        ]
 
-        self.outputs = [
-            self.diff,
-        ]
 
     def getpath(self, name):
 

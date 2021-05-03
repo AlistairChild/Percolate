@@ -42,7 +42,9 @@ class InPort(Port):
     def __init__(self, fn, name):
 
         super().__init__(fn, name)
-
+        #register func inputs
+        fn.inputs.append(self)
+        
     def notice(self, note):
         """Propagate notifications to function"""
 
@@ -60,7 +62,9 @@ class OutPort(Port):
     def __init__(self, fn, name, read_fn):
 
         super().__init__(fn, name)
-
+        #register outputs
+        fn.outputs.append(self)
+        
         self.read_fn = read_fn
         self.notice_event = Event(note=bool)
 

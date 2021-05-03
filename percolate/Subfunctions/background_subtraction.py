@@ -107,21 +107,7 @@ class background_subtraction2(Function):
             self, "subtracted_background", self.read_subtracted_background
         )
 
-        # publish ports
-        self.inputs = [
-            self.input_data,
-            self.fit,
-            self.apply_offset,
-            self.p_start,
-            self.p_end,
-            self.power,
-        ]
 
-        self.outputs = [
-            self.background,
-            self.subtracted_background,
-            # self.e_out,
-        ]
 
     def getpath(self, name):
 

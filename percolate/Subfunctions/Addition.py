@@ -60,15 +60,6 @@ class addition(Function):
         # outputs
         self.added = ArrayOutput(self, "added", self.read_added)
 
-        # port declaration
-        self.inputs = [
-            self.A,
-            self.B,
-        ]
-
-        self.outputs = [
-            self.added,
-        ]
 
     def getpath(self, name):
 

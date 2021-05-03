@@ -81,12 +81,6 @@ class Xas(Function):
 
 
 
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + name
-
-        return return_path
-
     def evaluate(self):
 
         local_arguments = args_xas(self)

@@ -75,9 +75,6 @@ class Transpose(Function):
 
 
 
-    def getpath(self, name):
-        return_path = str(self) + "/" + name
-        return return_path
 
     def evaluate(self):
 

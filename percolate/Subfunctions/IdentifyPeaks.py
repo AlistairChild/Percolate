@@ -186,13 +186,6 @@ class IdentifyPeaks(Function):
 
 
 
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + name
-
-        # return_path = self.parent.getpath(self, str(self.__class__.__name__) + "/" + str(name))
-        return return_path
-
     # evaluate method
     def evaluate(self):
 

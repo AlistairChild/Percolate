@@ -80,12 +80,7 @@ class Normalise(Function):
         self.a_p_norm = ArrayOutput(self, "a_p_norm", self.read_a_p_norm)
         self.a_a_norm = ArrayOutput(self, "a_a_norm", self.read_a_a_norm)
 
-    def getpath(self, name):
 
-        return_path = str(self) + "/" + name
-
-        # return_path = self.parent.getpath(self, str(self.__class__.__name__) + "/" + str(name))
-        return return_path
 
     def evaluate(self):
 

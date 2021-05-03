@@ -71,13 +71,6 @@ class scale(Function):
         self.scaled = ArrayOutput(self, "scaled", self.read_scaled)
 
 
-
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + name
-
-        return return_path
-
     def evaluate(self):
 
         a = np.array(self.input.read()["data"][1])

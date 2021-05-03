@@ -61,12 +61,6 @@ class addition(Function):
         self.added = ArrayOutput(self, "added", self.read_added)
 
 
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + name
-
-        return return_path
-
     def evaluate(self):
 
         a = np.array(self.A.read()["data"][1])

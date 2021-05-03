@@ -59,12 +59,6 @@ class convolve(Function):
 
 
 
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + str(name)
-
-        return return_path
-
     def evaluate(self):
 
         self.conv_calc = self.A.read()["data"][1] + self.B.read()["data"][1]

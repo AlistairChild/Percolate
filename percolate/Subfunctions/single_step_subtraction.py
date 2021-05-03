@@ -85,11 +85,6 @@ class single_step_subtraction(Function):
 
 
 
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + name
-
-        return return_path
 
     # evaluate method
     def evaluate(self):

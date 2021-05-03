@@ -118,12 +118,6 @@ class EXAFSStreamParser(Function):
 
         self.lines = None
 
-    def getpath(self, name):
-
-        return_path = str(self) + "/" + str(name)
-
-        return return_path
-
     def read_intensity(self):
 
         return {
@@ -172,12 +166,12 @@ class XMCDStreamParser(Function):
         self.e_data = None
         self.parent = Function
 
-    def getpath(self, name):
+    '''def getpath(self, name):
         # pass instance of class as path
         return_path = str(self) + "/" + str(name)
         # return_path = self.parent.getpath(self, str(self.__class__) + "/" + str(name))
         # return_path = self.parent.getpath(self, str(self.__class__.__name__) + "/" + str(name))
-        return return_path
+        return return_path'''
 
     def evaluate(self):
 
@@ -309,11 +303,7 @@ class SimpleParser(Function):
         self.e_data = None
         self.intensity_data = None
 
-    def getpath(self, name):
-        # pass instance of class as path
-        return_path = str(self) + "/" + str(name)
 
-        return return_path
 
     def evaluate(self):
 

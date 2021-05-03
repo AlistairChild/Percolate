@@ -34,8 +34,11 @@ class Port:
         self.edges = []
 
     def get_path(self):
-        return_path = self.fn.getpath(self.name)
-        return return_path
+    
+        return str(self.fn) +"/"+ str(self.name)
+        
+        #return_path = self.fn.getpath(self.name)
+        #return return_path
 
 
 class InPort(Port):

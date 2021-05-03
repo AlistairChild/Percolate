@@ -190,25 +190,13 @@ class MyDropTarget(wx.TextDropTarget):
         self.parent = parent
 
     def OnDropText(self, x, y, data):
-
+        
         port = self.app.lookup_port(data)
-
         self.parent.DisplayData(port)
         self.parent.DisplayPorts(port)
 
         return True
 
-
-class MyTextDropTarget(wx.TextDropTarget):
-    def __init__(self, object):
-
-        wx.TextDropTarget.__init__(self)
-        self.object = object
-
-    def OnDropText(self, x, y, data):
-
-        self.object.InsertItem(0, data)
-        return True
 
 
 class MaxPlotControl(OutputControlBase):
@@ -1470,28 +1458,32 @@ class MyApp(wx.App):
         self.main_frame.__auiManager.Update()
 
     def lookup_port(self, path):
-
+    
+        #return path
         # TODO: extend for a n entry path
+        
         directions = path.split("/")
-
-        if isinstance(self.func, CompositeFn):
-
+        
+        if str(self.func) == directions[0]:
+        
+            return getattr(self.func, directions[1])
+            
+        else:
             for subfn in self.func.subfns:
+            
                 if isinstance(subfn, CompositeFn):
+                
                     for subsubfn in subfn.subfns:
 
                         if str(subsubfn) == directions[0]:
 
                             return getattr(subsubfn, directions[1])
                 else:
+                
                     if str(subfn) == directions[0]:
 
                         return getattr(subfn, directions[1])
-        else:
 
-            # print(getattr(self.func, directions[1]))
-            return getattr(self.func, directions[1])
-            # print("not yet implemented")
 
     def WindowOnClose(self, event):
 

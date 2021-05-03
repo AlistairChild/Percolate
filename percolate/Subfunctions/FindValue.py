@@ -56,11 +56,7 @@ class FindValue(Function):
         self.graph = ArrayOutput(self, "graph", self.read_graph)
 
 
-    def getpath(self, name):
 
-        return_path = str(self) + "/" + name
-
-        return return_path
 
     def evaluate(self):
 

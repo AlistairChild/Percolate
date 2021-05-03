@@ -51,8 +51,8 @@ class SinGen(Function):
         super().__init__("SinGen")
         
         # ports
-        self.frequency = free_int_input(self, "freq", 100, 200, 500)
-        self.amplitude = free_int_input(self, "amp", 0, 1, 100)
+        self.frequency = free_int_input(self, "frequency", 100, 200, 500)
+        self.amplitude = free_int_input(self, "frequency", 0, 1, 100)
         self.line1 = free_int_input(self, "line1", 0, 1, 100)
         self.line2 = free_int_input(self, "line2", 0, 1, 100)
         self.sin = ArrayOutput(self, "sin", self.read_sin)

@@ -156,7 +156,13 @@ class num_input(InPort):
 
         self.input_stream = input_stream
         self.default = default
+        
+class GridInput(InPort):
+    def __init__(self, fn, name):
 
+        super().__init__(fn, name)
+        
+        self.grid = [[None for x in range(4)] for y in range(20)]
 
 class free_int_input(InPort):
     def __init__(self, fn, name, min, default, max):

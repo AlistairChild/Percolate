@@ -93,6 +93,7 @@ from percolate.framework import bool_input
 from percolate.framework import choice_input
 from percolate.framework import Function
 from percolate.framework import Edge
+from percolate.framework import GridInput
 from percolate.framework import CompositeFn
 
 # matplotlib (Plotting)
@@ -458,12 +459,15 @@ class MaxPlotControl(OutputControlBase):
                 for x_data, y_data, label in zip(x, y, lbl):
                     count = count + 1
                     try:
-
+    
                         for line in lines:
-                            if self.guidelines:
-                                self.panel.lines = self.a.axvline(line, 0, 1)
-
+        
+                                if line:
+            
+                                    self.panel.lines = a.axvline(line, 0, 1)
+        
                     except:
+        
                         pass
 
                     if len(x) != len(y):
@@ -512,6 +516,18 @@ class MaxPlotControl(OutputControlBase):
                     # self.a.legend()
 
             else:
+            
+                try:
+
+                    for line in lines:
+    
+                        if line:
+    
+                            self.panel.lines = self.a.axvline(line, 0, 1)
+    
+                except:
+    
+                    pass
                 if self.datapoints and self.drawline:
                     self.panel.lines = self.a.plot(
                         x, y, color=colors[count], label=lbl[0] + " - " + str(port.name)
@@ -704,6 +720,7 @@ class MinimalPlotControl(OutputControlBase):
             self.canvas.lines = a.plot(x, y, color=colors[0], label=lbl)
 
         if x.ndim and y.ndim == 2:
+
             count = 0
             for xi, yi, label in zip(x, y, lbl):
                 count = count + 1
@@ -1095,8 +1112,54 @@ class Equation_display:
         sizer.Add(self.canvas, 7, wx.ALIGN_CENTRE | wx.LEFT)
 
         fgs.Add(sizer, 0, wx.TOP | wx.EXPAND)
+        
+class GridControl(InputControlBase):
 
+    def __init__(self, parent, fgs, target_port):
+    
+        super().__init__(target_port, "GridControl(%s)" % target_port.name)
+    
+        self.target_port = target_port
+        
+        
+        
+        #sizer = wx.BoxSizer(wx.VERTICAL)
+        # print(self.port.max)
 
+        self.ctrl = wx.grid.Grid(parent, name = target_port.name)
+        self.ctrl.name = self.target_port.name
+        self.ctrl.CreateGrid(20, 4)
+
+        #self.ctrl.GetColSizes()
+        #self.ctrl.SetDefaultRowSize(20)
+        self.ctrl.SetDefaultColSize(250)
+
+        
+        self.ctrl.SetColLabelValue(0, "Center of peak")
+        self.ctrl.SetColLabelValue(1, "Type")
+        self.ctrl.SetColLabelValue(2, "Height")
+        self.ctrl.SetColLabelValue(3, "Sigma")
+        
+        #sizer.Add(panel, 1, wx.EXPAND)
+        
+        fgs.Add(self.ctrl , 1, wx.EXPAND)
+
+        self.ctrl.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_value)
+
+    def on_value(self, evt):
+    
+        col = evt.GetCol()
+        row = evt.GetRow()
+        
+        #put data into grid object
+        self.target_port.grid[row][col] = self.ctrl.GetCellValue(row,col)
+        
+        self.changed()
+
+    def read(self):
+
+        return self.target_port
+        
 class PortControl:
     def __init__(self, parent, fgs, port, func, aui_notebook, manager, app):
 
@@ -1140,6 +1203,9 @@ class PortControl:
 
         elif isinstance(port, bool_input):
             self.io = CheckControl(parent, fgs, port)
+        
+        elif isinstance(port, GridInput):
+            self.io = GridControl(parent, fgs, port)
 
         elif isinstance(port, func_Output):
             print("No Implementation for func_Output")

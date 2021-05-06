@@ -60,7 +60,7 @@ def parse_xmcd_data_file(file_path):
 
     # List of column indices corresponding to required properties:
     #    (time, mag, e, ioes, ey, clock, theta, z)
-    SELECT_COLS = (1, 2, 4, 6, 7, 10, 19, 2)
+    SELECT_COLS = (1, 2, 4, 7, 8, 11, 19, 2)
 
     # Open file and examine line by line
     data_file = file_path.split("\n")

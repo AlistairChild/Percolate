@@ -31,9 +31,10 @@ def Normalise_spectra(x, y, p1, p2):
 
     if p1 and p2:
 
-        normalised_spectra = y / (
+        normalised_spectra = y / abs(
             y[find_array_equivalent(x, p2)] - y[find_array_equivalent(x, p1)]
-        )
+        ) 
+        normalised_spectra = normalised_spectra - min(normalised_spectra)
 
     else:
         normalised_spectra = y

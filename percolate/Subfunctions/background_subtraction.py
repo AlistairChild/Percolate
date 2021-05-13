@@ -47,9 +47,8 @@ from percolate.toolkit.find_array_equivalent import find_array_equivalent
 from percolate.toolkit.check_values_in_range import check_values_in_range
 from percolate.toolkit.background1 import background1
 from percolate.toolkit.Fit_inside_limits_polynomial import Fit_inside_limits_polynomial
-from percolate.toolkit.Fit_outside_limits_polynomial import (
-    Fit_outside_limits_polynomial,
-)
+from percolate.toolkit.Fit_exponential_decay import Fit_exponential_decay
+from percolate.toolkit.Fit_outside_limits_polynomial import Fit_outside_limits_polynomial
 from percolate.toolkit.make_zero_array import make_zero_array
 
 
@@ -83,7 +82,7 @@ class background_subtraction2(Function):
                 "No fit",
                 "Polynomial fit inside limits",
                 "Polynomial fit outside limits",
-                "exp decay (fits for all e < 'Background_start' and e > ' Background_end')",
+                "exp decay",
                 "2 point linear (straight line between 2 points)",
             ],
         )
@@ -173,7 +172,7 @@ class background_subtraction(Function):
                 "No fit",
                 "Polynomial fit inside limits",
                 "Polynomial fit outside limits",
-                "exp decay (fits for all e < 'Background_start' and e > ' Background_end')",
+                "exp decay",
                 "2 point linear (straight line between 2 points)",
             ],
         )
@@ -330,6 +329,16 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
                 power=power,
                 offset =offset,
             )
+        elif fit == "exp decay":
+
+            x, y, background = Fit_exponential_decay(
+                x=x,
+                y=y,
+                lowerx=lowerx,
+                upperx=upperx,
+                power=power,
+                offset =offset,
+            )
 
     elif x.ndim and y.ndim == 2:
 
@@ -377,7 +386,22 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
                     power=power,
                     offset=offset,
                 )
-
+                    
+                x_list.append(xi)
+                background_list.append(backgroundi)
+                y_list.append(yi)
+                
+        elif fit == "exp decay":
+        
+            for i in range(n_files):
+                xi, yi, backgroundi = Fit_exponential_decay(
+                    x=x[i],
+                    y=y[i],
+                    lowerx=lowerx,
+                    upperx=upperx,
+                    power=power,
+                    offset =offset,
+                )
                 x_list.append(xi)
                 background_list.append(backgroundi)
                 y_list.append(yi)

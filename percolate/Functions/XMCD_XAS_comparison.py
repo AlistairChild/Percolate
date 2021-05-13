@@ -58,6 +58,7 @@ from percolate.Subfunctions.Transpose import Transpose
 from percolate.Subfunctions.FindValue import FindValue
 from percolate.Subfunctions.SumRules import SumRules
 
+from percolate.Subfunctions.Addition import addition
 
 class XMCD_XAS_comparison(CompositeFn):
     """This function allows for a comparison between the XMCD and XAS spectra"""
@@ -76,7 +77,7 @@ class XMCD_XAS_comparison(CompositeFn):
         step = step_subtraction()
         diff = difference()
         diff_xas_xmcd = difference()
-        xas = Xas()
+        ad= addition()
 
         # subfns
         self.subfns.append(dr)
@@ -85,7 +86,7 @@ class XMCD_XAS_comparison(CompositeFn):
         self.subfns.append(bs2)
         self.subfns.append(norm)
         self.subfns.append(diff)
-        self.subfns.append(xas)
+        self.subfns.append(ad)
         self.subfns.append(norm2)
         self.subfns.append(diff_xas_xmcd)
 
@@ -97,9 +98,9 @@ class XMCD_XAS_comparison(CompositeFn):
         self.edges.append(Edge(bs2.subtracted_background, norm.t_a_all))
         self.edges.append(Edge(norm.a_a_norm, diff.A))
         self.edges.append(Edge(norm.a_p_norm, diff.B))
-        self.edges.append(Edge(norm.a_a_norm, xas.a_a_norm))
-        self.edges.append(Edge(norm.a_p_norm, xas.a_p_norm))
-        self.edges.append(Edge(xas.xas, norm2.t_a_all))
+        self.edges.append(Edge(norm.a_a_norm, ad.A))
+        self.edges.append(Edge(norm.a_p_norm, ad.B))
+        self.edges.append(Edge(ad.added, norm2.t_a_all))
         self.edges.append(Edge(diff.diff, norm2.t_p_all))
         self.edges.append(Edge(norm2.a_a_norm, diff_xas_xmcd.A))
         self.edges.append(Edge(norm2.a_p_norm, diff_xas_xmcd.B))

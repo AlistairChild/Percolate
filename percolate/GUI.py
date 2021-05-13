@@ -31,6 +31,7 @@ import lmfit
 from lmfit import Model
 from lmfit import minimize, Parameters
 import imp
+import random
 
 # wx
 import wx
@@ -234,8 +235,8 @@ class MaxPlotControl(OutputControlBase):
         fgs = wx.FlexGridSizer(4, 1, 10, 10)
 
         self.panel.fig = Figure((5, 3), 75)
-        self.panel.canvas = FigureCanvas(self.panel, 1, self.panel.fig)
-        self.panel.toolbar = NavigationToolbar(self.panel.canvas)  # matplotlib toolbar
+        self.panel.fig.canvas = FigureCanvas(self.panel, 1, self.panel.fig)
+        self.panel.toolbar = NavigationToolbar(self.panel.fig.canvas)  # matplotlib toolbar
         self.panel.toolbar.Realize()
 
         self.items_in_plot = wx.CheckListBox(
@@ -244,11 +245,11 @@ class MaxPlotControl(OutputControlBase):
 
         canvas_sizer = wx.BoxSizer(wx.HORIZONTAL)
         canvas_sizer.AddMany(
-            [(self.panel.canvas, 5, wx.EXPAND), (self.items_in_plot, 1, wx.EXPAND)]
+            [(self.panel.fig.canvas, 5, wx.EXPAND), (self.items_in_plot, 1, wx.EXPAND)]
         )
 
-        dt = MyDropTarget(self, self.panel.canvas, app)
-        self.panel.canvas.SetDropTarget(dt)
+        dt = MyDropTarget(self, self.panel.fig.canvas, app)
+        self.panel.fig.canvas.SetDropTarget(dt)
 
         fgs.AddMany(
             [
@@ -271,6 +272,7 @@ class MaxPlotControl(OutputControlBase):
             wx.EVT_CHECKBOX, self.on_guideline_request, self.guidelinesrequest
         )
         self.panel.Bind(wx.EVT_CHECKLISTBOX, self.on_port_select, self.items_in_plot)
+        self.panel.fig.canvas.mpl_connect('motion_notify_event', self.mouse_move)
 
         self.ports = []
         self.evaluate()
@@ -281,7 +283,15 @@ class MaxPlotControl(OutputControlBase):
         self.guidelines = True
 
         self.selected_ports = []
-
+        
+    def mouse_move(self, evt):
+    
+        x, y = evt.xdata, evt.ydata
+        #self.a.format_coords = 'x:%1.4f, y:%1.4f'%(x , y)
+        #self.panel.fig.canvas.draw()
+        #self.panel.toolbar.update()
+        #print(x, y)
+        #self.a.text('x:%1.4s, y:%1.4s'%(x , y))
     def on_port_select(self, evt):
 
         self.ports = []
@@ -358,7 +368,18 @@ class MaxPlotControl(OutputControlBase):
 
         # add subplot
         self.a = self.panel.fig.add_subplot(111)
-
+        self.a.grid(False)
+        
+        
+        def format_coord(x, y):
+            col = int(x+0.5)
+            row = int(y+0.5)
+            if col>=0 and col<numcols and row>=0 and row<numrows:
+                z = X[row,col]
+                return 'x=%1.4f, y=%1.4f, z=%1.4f'%(x, y, z)
+            else:
+                return 'x=%1.4f, y=%1.4f'%(x, y)
+        
         # create color dictionary
         colors = [
             "blue",
@@ -464,7 +485,7 @@ class MaxPlotControl(OutputControlBase):
         
                                 if line:
             
-                                    self.panel.lines = a.axvline(line, 0, 1)
+                                    self.panel.lines = self.a.axvline(line, 0, 1)
         
                     except:
         
@@ -516,7 +537,8 @@ class MaxPlotControl(OutputControlBase):
                     # self.a.legend()
 
             else:
-            
+                self.a.format_coords = format_coord
+
                 try:
 
                     for line in lines:
@@ -548,7 +570,8 @@ class MaxPlotControl(OutputControlBase):
                 if self.legend:
 
                     self.a.legend()
-
+                    
+        
         self.panel.fig.canvas.draw()
         self.panel.toolbar.update()
 
@@ -782,7 +805,10 @@ class MinimalPlotControl(OutputControlBase):
 
             self.app.canvas_dict[key].evaluate()
 
-
+def random_color():
+    rgbl=[255,0,0]
+    random.shuffle(rgbl)
+    return tuple(rgbl)
 class FigureStack(OutputControlBase):
     # ----------------------------------------------------------------------
     def __init__(self, name):
@@ -810,8 +836,11 @@ class FigureStack(OutputControlBase):
 
                 count = count + 1
         else:
-            self.lines = pl.plot(x, y, "k", label=lbl)
+    
+            #color = (random.random(), random.random(), random.random())
+            self.lines = pl.plot(x, y, color = (random.random(), random.random(), random.random()), label=lbl)
             pl.legend()
+            
 
         pl.legend()
 
@@ -1720,6 +1749,7 @@ def package_contents(package_name):
     MODULE_EXTENSIONS = ".py"
 
     file, pathname, description = imp.find_module(package_name)
+    
 
     if file:
 

@@ -20,6 +20,7 @@ SOFTWARE."""
 
 # generic
 import sys
+import csv
 import os
 import argparse
 import re
@@ -110,7 +111,124 @@ from matplotlib.figure import Figure
 import numpy as np
 import matplotlib.pyplot as pl
 import math
+linestyle = [
 
+     ('solid', 'solid'),      # Same as (0, ()) or '-'
+     ('dotted', 'dotted'),    # Same as (0, (1, 1)) or '.'
+     ('dashed', 'dashed'),    # Same as '--'
+     ('dashdot', 'dashdot'),
+     #parameterised
+     ('dotted',                (0, (1, 1))),
+     ('densely dotted',        (0, (1, 1))),
+
+     ('dashed',                (0, (5, 5))),
+     ('densely dashed',        (0, (5, 1))),
+
+     ('dashdotted',            (0, (3, 5, 1, 5))),
+     ('densely dashdotted',    (0, (3, 1, 1, 1))),
+
+     ('dashdotdotted',         (0, (3, 5, 1, 5, 1, 5))),
+     ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1)))
+
+]
+markers = [
+    ".",
+    "o",
+    "v",
+    "^",
+    "<",
+    ">",
+    "1",
+    "8",
+    "s",
+    "p",
+    "P",
+    "*",
+    "+",
+    "D",
+    "d",
+
+]
+
+colors = [
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "green",
+    "orange",
+    "turquoise",
+    "pink",
+    "blue",
+    "black",
+    "red",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "black",
+    "red",
+    "blue",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "turquoise",
+    "pink",
+    "blue",
+    "black",
+    "red",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "black",
+    "red",
+    "blue",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "turquoise",
+    "pink",
+    "blue",
+    "black",
+    "red",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "black",
+    "red",
+    "blue",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+]
 
 def exists_in_list(list, item):
 
@@ -202,6 +320,7 @@ class MyDropTarget(wx.TextDropTarget):
 
 
 class MaxPlotControl(OutputControlBase):
+
     def __init__(self, parent, port, aui_notebook, manager, app):
 
         # dictionary for plots
@@ -362,7 +481,8 @@ class MaxPlotControl(OutputControlBase):
         self.evaluate()
 
     def evaluate(self):
-
+        
+        
         # clear figure
         self.panel.fig.clear()
 
@@ -381,92 +501,14 @@ class MaxPlotControl(OutputControlBase):
                 return 'x=%1.4f, y=%1.4f'%(x, y)
         
         # create color dictionary
-        colors = [
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-        ]
+
 
         # we need to accompany multiple different ports
         count = 0
         for port in self.ports:
-
+            
             # data
-
+            
             x = np.array(port.read()["data"][0])
             y = np.array(port.read()["data"][1])
             lbl = list(port.read()["label"])
@@ -475,7 +517,7 @@ class MaxPlotControl(OutputControlBase):
             count = count + 1
 
             if x is not None and len(x.shape) > 1:
-                count = 0
+                
                 # for item in x:
                 for x_data, y_data, label in zip(x, y, lbl):
                     count = count + 1
@@ -494,31 +536,33 @@ class MaxPlotControl(OutputControlBase):
                     if len(x) != len(y):
                         y = "".join(y)
                         self.panel.lines = self.a.plot(
-                            x_data, y_data, color=colors[count], label=y
+                            x_data, y_data, color=colors[count], label = y
                         )
                     else:
                         if self.datapoints and self.drawline:
                             self.panel.lines = self.a.plot(
                                 x_data,
                                 y_data,
+                                linestyle = linestyle[count%(len(linestyle))][1],
                                 color=colors[count],
-                                label=label + " - " + str(port.name),
+                                label = label + " - " + str(port.name),
                             )
                             self.a.scatter(
-                                x_data, y_data, marker="o", color="black", s=5
+                                x_data, y_data, marker=markers[count%(len(markers))], color="black", s=15, label = label + " - " + str(port.name)
                             )
 
                         elif self.drawline:
                             self.panel.lines = self.a.plot(
                                 x_data,
                                 y_data,
+                                linestyle = linestyle[count%(len(linestyle))][1],
                                 color=colors[count],
                                 label=label + " - " + str(port.name),
                             )
 
                         elif self.datapoints:
                             self.a.scatter(
-                                x_data, y_data, marker="o", color="black", s=5
+                                x_data, y_data, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = label + " - " + str(port.name)
                             )
 
                         else:
@@ -534,7 +578,7 @@ class MaxPlotControl(OutputControlBase):
 
                         self.a.legend(lines, labels)
 
-                    # self.a.legend()
+                        self.a.legend()
 
             else:
                 self.a.format_coords = format_coord
@@ -552,17 +596,17 @@ class MaxPlotControl(OutputControlBase):
                     pass
                 if self.datapoints and self.drawline:
                     self.panel.lines = self.a.plot(
-                        x, y, color=colors[count], label=lbl[0] + " - " + str(port.name)
+                        x, y, linestyle = linestyle[count%(len(linestyle))][1], color=colors[count], label=lbl[0] + " - " + str(port.name)
                     )
-                    self.a.scatter(x, y, marker="o", color="black", s=5)
+                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = lbl[0] + " - " + str(port.name))
 
                 elif self.drawline:
                     self.panel.lines = self.a.plot(
-                        x, y, color=colors[count], label=lbl[0] + " - " + str(port.name)
+                        x, y,linestyle = linestyle[count%(len(linestyle))][1], color=colors[count], label=lbl[0] + " - " + str(port.name)
                     )
 
                 elif self.datapoints:
-                    self.a.scatter(x, y, marker="o", color="black", s=5)
+                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[-count], s=15, label = lbl[0] + " - " + str(port.name))
 
                 else:
                     pass
@@ -593,9 +637,12 @@ class MinimalPlotControl(OutputControlBase):
 
         self.fig = Figure((5, 0.8), 75)
         self.canvas = FigureCanvas(parent, -1, self.fig)
-
+        
+        self.export_button = wx.Button(self.parent, label = " -> ")
+        
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.canvas, 7, wx.ALIGN_CENTRE | wx.LEFT)
+        sizer.Add(self.canvas, 10, wx.ALIGN_CENTRE | wx.LEFT)
+        sizer.Add(self.export_button, 1, wx.ALIGN_CENTRE | wx.LEFT)
         fgs.Add(sizer, 0, wx.TOP | wx.EXPAND)
 
         # handlers
@@ -603,9 +650,37 @@ class MinimalPlotControl(OutputControlBase):
         self.canvas.mpl_connect("axes_leave_event", self.leave_axes)
         self.canvas.mpl_connect("button_press_event", self.OnDrag)
         self.canvas.mpl_connect("button_release_event", self.OnDrag)
-
+        
+        self.export_button.Bind(wx.EVT_BUTTON, self.OnExportData)
+        
         self.evaluate()
+        
+    def OnExportData(self, event):
+        x = np.array(self.port.read()["data"][0])
+        y = np.array(self.port.read()["data"][1])
+        
+        
+        fdlg = wx.FileDialog(self.parent, "Input setting file path", "", "", "CSV files(*.csv)|*.*", wx.FD_SAVE)
+        
+        if fdlg.ShowModal() == wx.ID_OK:
+            self.save_path = fdlg.GetPath() + ".csv"
+        
+        with open(self.save_path, "w",newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Energy", "Signal"]) 
+            
+            if x.ndim and y.ndim == 1:
+                for i in range(len(x)):
+                    writer.writerow([x[i], y[i]]) 
+                    
+            if x.ndim and y.ndim == 2:
+                for i in range(len(x)):
+                    for j in range(len(x[i])):
+                        writer.writerow([x[i][j], y[i][j]]) 
+                
 
+                        
+        
     def enter_axes(self, event):
         event.inaxes.patch.set_facecolor("lightgrey")
         event.canvas.draw()
@@ -637,86 +712,6 @@ class MinimalPlotControl(OutputControlBase):
         self.fig.clear()
 
         a = self.fig.add_subplot(111)
-
-        colors = [
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-        ]
 
         x = np.array(self.port.read()["data"][0])
 
@@ -809,6 +804,7 @@ def random_color():
     rgbl=[255,0,0]
     random.shuffle(rgbl)
     return tuple(rgbl)
+    
 class FigureStack(OutputControlBase):
     # ----------------------------------------------------------------------
     def __init__(self, name):
@@ -1150,9 +1146,9 @@ class GridControl(InputControlBase):
     
         self.target_port = target_port
         
+        print(parent.fgs.GetSize())
         
-        
-        #sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         # print(self.port.max)
 
         self.ctrl = wx.grid.Grid(parent, name = target_port.name)
@@ -1171,7 +1167,7 @@ class GridControl(InputControlBase):
         
         #sizer.Add(panel, 1, wx.EXPAND)
         
-        fgs.Add(self.ctrl , 1, wx.EXPAND)
+        fgs.Add(self.ctrl , 0, wx.EXPAND)
 
         self.ctrl.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_value)
 
@@ -1193,7 +1189,8 @@ class PortControl:
     def __init__(self, parent, fgs, port, func, aui_notebook, manager, app):
 
         self.port = port
-
+        self.parent = parent
+        self.fgs = fgs
         # self.label = Equation_display(parent, fgs, port)
         # self.label = fgs.Add(label)
         self.label = fgs.Add(wx.StaticText(parent, label=port.name))
@@ -1246,9 +1243,12 @@ class PortControl:
             self.io = fgs.Add(
                 wx.StaticText(parent, label="unsupported type"), 1, wx.EXPAND
             )
+            
+        
 
         # dictionary contaning all io ports to be used for drag and drop reference
         app.io_dictionary[self.port] = self.io
+
 
 
 class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
@@ -1266,7 +1266,7 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
         # Sizers
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        fgs = wx.FlexGridSizer(20, 2, 10, 10)
+        self.fgs = wx.FlexGridSizer(20, 2, 10, 10)
 
         # print("FuncCtrl " + func.name)
         for port in func.inputs:
@@ -1275,17 +1275,17 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
                 continue  # skip input ports with a edge already attached
             # print("Port in : " + port.name)
 
-            PortControl(self, fgs, port, func, aui_notebook, manager, app)
+            PortControl(self, self.fgs, port, func, aui_notebook, manager, app)
 
         for port in func.outputs:
             # print("Port out : " + port.name)
 
-            PortControl(self, fgs, port, func, aui_notebook, manager, app)
+            PortControl(self, self.fgs, port, func, aui_notebook, manager, app)
 
         # fgs.AddGrowableRow(2, 1)
-        fgs.AddGrowableCol(1, 1)
+        self.fgs.AddGrowableCol(1, 1)
 
-        hbox.Add(fgs, proportion=2, flag=wx.ALL | wx.EXPAND, border=15)
+        hbox.Add(self.fgs, proportion=2, flag=wx.ALL | wx.EXPAND, border=15)
 
         self.SetSizer(hbox)
 

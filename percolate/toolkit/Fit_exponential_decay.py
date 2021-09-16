@@ -38,8 +38,8 @@ def calculate_results1(x, y, lowerx, upperx, power, offset):
 
             if arr_lower_lim <= arr_upper_lim:
                 
-                x_cut = np.concatenate((x[ : arr_lower_lim],x[arr_upper_lim :]), axes = 0) - x[0]
-                y_cut = np.concatenate((y[ : arr_lower_lim],y[arr_upper_lim :]), axes = 0)
+                x_cut = np.concatenate((x[ : arr_lower_lim],x[arr_upper_lim :]), axis = 0) - x[0]
+                y_cut = np.concatenate((y[ : arr_lower_lim],y[arr_upper_lim :]), axis = 0)
                 
 
             elif arr_lower_lim > arr_upper_lim:

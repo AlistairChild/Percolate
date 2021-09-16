@@ -32,7 +32,7 @@ def make_zero_array(array):
 
         zeros = []
 
-        for i in range(array.ndim):
+        for i in range(array.shape[0]):
 
             zeros.append(array[i])
 

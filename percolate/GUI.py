@@ -1237,58 +1237,7 @@ class DropTarget(wx.DropTarget):
 
         # drop the port into window
         self.window.DisplayData(data)
-def setup_function(application, functionname):   
 
-    #import selected function dynamically
-    path = importlib.import_module('.%s'% functionname, 'percolate.Functions')
-    application.func = path.function
-    
-    application.main_frame.function_control_tree = wx.TreeCtrl(application.main_frame)
-
-    application.main_frame.function_control["Function Ctrl"].AddPage(
-            application.main_frame.function_control_tree,
-            caption=application.func.name,
-    )
-
-    # repopulate tree with subfunctions
-    control_root = application.main_frame.function_control_tree.AddRoot(
-        application.func.name, data=application.func
-    )
-    application.create_controls(application.func, control_root)
-    
-    if application.main_frame.__auiManager.GetPane(application.func.name).IsOk():   
-    
-        print("Function with this name already exists")
-        
-    
-    else:
-        if application.main_frame.__auiManager.GetPane("Function view").IsOk():
-
-            application.main_frame.__auiManager.GetPane("Function view").caption = application.func.name
-            application.main_frame.__auiManager.GetPane("Function view").name = application.func.name
-            application.main_frame.function_control = application.main_frame.function_control["Function view"]
-
-    
-        # Open first element
-        if isinstance(application.func, CompositeFn):
-            addedtab = FuncCtrl(
-                application.main_frame.function_control,
-                application.func.subfns[0],
-                application.main_frame.__auiManager,
-                application,
-                application.func.subfns[0].name,
-            )
-
-            application.addedtabs[application.func.subfns[0].name] = addedtab
-            # add the tab with event id as name
-            application.main_frame.function_control.AddPage(
-                application.addedtabs[application.func.subfns[0].name],
-                caption=application.func.subfns[0].name,
-            )
-    application.main_frame.__auiManager.Update()
-
-    # create loop
-    application.MainLoop()
 
 class MyApp(wx.App):
     def OnInit(self):
@@ -1397,15 +1346,67 @@ class MyApp(wx.App):
         self.func =None
         self.count = 0
         self.addedtabs = dict()
+    def setup_function(self, application, functionname):  
 
+        
+        #import selected function dynamically
+        path = importlib.import_module('.%s'% functionname, 'percolate.Functions')
+        application.func = path.function
+        
+        application.main_frame.function_control_tree = wx.TreeCtrl(application.main_frame)
+
+        application.main_frame.function_control["Function Ctrl"].AddPage(
+                application.main_frame.function_control_tree,
+                caption=application.func.name,
+        )
+
+        # repopulate tree with subfunctions
+        control_root = application.main_frame.function_control_tree.AddRoot(
+            application.func.name, data=application.func
+        )
+        application.create_controls(application.func, control_root)
+        
+        if application.main_frame.__auiManager.GetPane(application.func.name).IsOk():   
+        
+            print("Function with this name already exists")
+            
+        
+        else:
+            if application.main_frame.__auiManager.GetPane("Function view").IsOk():
+
+                application.main_frame.__auiManager.GetPane("Function view").caption = application.func.name
+                application.main_frame.__auiManager.GetPane("Function view").name = application.func.name
+                application.main_frame.function_control = application.main_frame.function_control["Function view"]
+
+        
+            # Open first element
+            if isinstance(application.func, CompositeFn):
+                addedtab = FuncCtrl(
+                    application.main_frame.function_control,
+                    application.func.subfns[0],
+                    application.main_frame.__auiManager,
+                    application,
+                    application.func.subfns[0].name,
+                )
+
+                application.addedtabs[application.func.subfns[0].name] = addedtab
+                # add the tab with event id as name
+                application.main_frame.function_control.AddPage(
+                    application.addedtabs[application.func.subfns[0].name],
+                    caption=application.func.subfns[0].name,
+                )
+        application.main_frame.__auiManager.Update()
+
+        # create loop
+        application.MainLoop()
     def on_func_select(self, evt):
         
         if self.func: #if function exists
             app = MyApp(False)
-            setup_function(app, evt.GetEventObject().GetLabel(evt.GetId())[:-3])
+            self.setup_function(app, evt.GetEventObject().GetLabel(evt.GetId())[:-3])
             
         else:#if function new
-            setup_function(self, evt.GetEventObject().GetLabel(evt.GetId())[:-3])
+            self.setup_function(self, evt.GetEventObject().GetLabel(evt.GetId())[:-3])
 
     def on_tab_close(self, evt):
 

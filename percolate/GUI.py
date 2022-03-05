@@ -19,6 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # generic
+from os import listdir
+import importlib.util
+from os.path import isfile, join
 import sys
 import os
 import argparse
@@ -30,7 +33,13 @@ import random
 import lmfit
 from lmfit import Model
 from lmfit import minimize, Parameters
-import imp
+
+
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
 
 # wx
 import wx
@@ -1204,13 +1213,7 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
 class CtrlFrame(wx.Frame):
     def __init__(
         self,
-        parent=None,
-        id=wx.ID_ANY,
-        title="App",
-        pos=(50, 50),
-        size=(400, 400),
-        style=wx.DEFAULT_FRAME_STYLE,
-        screen_factor=0.5,
+        parent=None
     ):
 
         wx.Frame.__init__(
@@ -1219,7 +1222,7 @@ class CtrlFrame(wx.Frame):
         
         #create a dictionary so Aui manager has a reference to all notebooks and function trees.
         self.function_notebooks = dict()
-
+    
         self.Show()
 
 
@@ -1241,7 +1244,7 @@ class MyApp(wx.App):
         # Build the GUI
         self.Main_Frame_Adapter()
         return True
-
+    #what does this do rename 
     def Main_Frame_Adapter(self):
 
         # dictionary of arrays to plot on maxplot.
@@ -1268,32 +1271,8 @@ class MyApp(wx.App):
         self.main_frame.submenu = wx.MenuItem()
 
         self.main_frame.PlotMenu = wx.Menu()
-
-        Functions = []
-
-        content = package_contents("percolate/Functions")
-
-        for file in content:
-
-            if re.search(".py", file):
-
-                Functions.append(file)
-            # break
-
-        # look in functions directory to fill menu with functions create a dict of functions
-        """if os.path.exists(os.path.join(os.getcwd(), 'Functions')):
-        
-            
-            
-            for (dirpath, dirnames, filenames) in walk(os.path.join(os.getcwd(), 'Functions')):
-                Functions.extend(filenames)
-                break"""
-
-        # self.main_frame.open_file = []
-        # self.main_frame.open_file = Functions
-
-        for file in Functions:
-
+    
+        for file in package_contents("percolate/Functions"):
             self.main_frame.fileMenu.Append(wx.ID_ANY, file)
 
         self.main_frame.PlotMenu.Append(wx.ID_ANY, "Canvas")
@@ -1503,29 +1482,33 @@ class MyApp(wx.App):
 
             # get path in order to dynamically iomport function
             # path = os.path.join(os.getcwd(), 'Functions', evt.GetEventObject().GetLabel(id_selected))
-            path = module_path(
-                "percolate/Functions/%s" % evt.GetEventObject().GetLabel(id_selected)[:-3]
-            )
-            # dynamical import
-            func = import_path(path).function
+
+            path = importlib.import_module('.%s'% evt.GetEventObject().GetLabel(id_selected)[:-3], 'percolate.Functions')
+            app.func = path.function
+            # func = path.function
+            # path = module_path(
+            #     "percolate/Functions/%s" % evt.GetEventObject().GetLabel(id_selected)[:-3]
+            # )
+            # # dynamical import
+            # func = import_path(path).function
 
             # declare func
-            app.func = func
+            #app.func = func
             
             app.main_frame.function_control_tree = wx.TreeCtrl(app.main_frame)
 
             app.main_frame.function_notebooks["Function Ctrl"].AddPage(
                     app.main_frame.function_control_tree,
-                    caption=func.name,
+                    caption=app.name,
             )
 
             # repopulate tree with subfunctions
             control_root = app.main_frame.function_control_tree.AddRoot(
-                app.func.name, data=func
+                app.func.name, data=app.func
             )
-            app.create_controls(func, control_root)
+            app.create_controls(app.func, control_root)
             
-            if app.main_frame.__auiManager.GetPane(func.name).IsOk():   
+            if app.main_frame.__auiManager.GetPane(app.func.name).IsOk():   
             
                 print("Function with this name already exists")
                 
@@ -1533,13 +1516,13 @@ class MyApp(wx.App):
             else:
                 if app.main_frame.__auiManager.GetPane("Function view").IsOk():
 
-                    app.main_frame.__auiManager.GetPane("Function view").caption = func.name
-                    app.main_frame.__auiManager.GetPane("Function view").name = func.name
+                    app.main_frame.__auiManager.GetPane("Function view").caption = app.func.name
+                    app.main_frame.__auiManager.GetPane("Function view").name = app.func.name
                     app.main_frame.function_notebooks = app.main_frame.function_notebooks["Function view"]
 
             
                 # Open first element
-                if isinstance(func, CompositeFn):
+                if isinstance(app.func, CompositeFn):
                     addedtab = FuncCtrl(
                         app.main_frame.function_notebooks,
                         app.func.subfns[0],
@@ -1565,14 +1548,16 @@ class MyApp(wx.App):
 
             # get path in order to dynamically iomport function
             # path = os.path.join(os.getcwd(), 'Functions', evt.GetEventObject().GetLabel(id_selected))
-            path = module_path(
-                "percolate/Functions/%s" % evt.GetEventObject().GetLabel(id_selected)[:-3]
-            )
-            # dynamical import
-            func = import_path(path).function
+            path = importlib.import_module('.%s'% evt.GetEventObject().GetLabel(id_selected)[:-3], 'percolate.Functions')
+            self.func = path.function
+            # path = module_path(
+            #     "percolate/Functions/%s" % evt.GetEventObject().GetLabel(id_selected)[:-3]
+            # )
+            # # dynamical import
+            # func = import_path(path).function
 
             # declare func
-            self.func = func
+            #self.func = func
             
             self.main_frame.function_control_tree = wx.TreeCtrl(self.main_frame)
 
@@ -1596,14 +1581,14 @@ class MyApp(wx.App):
                 #change the name of the notebook to the function name 
                 if self.main_frame.__auiManager.GetPane("Function view").IsOk():
 
-                    self.main_frame.__auiManager.GetPane("Function view").caption = func.name
-                    self.main_frame.__auiManager.GetPane("Function view").name = func.name
+                    self.main_frame.__auiManager.GetPane("Function view").caption = self.func.name
+                    self.main_frame.__auiManager.GetPane("Function view").name = self.func.name
                     self.main_frame.function_notebooks = self.main_frame.function_notebooks["Function view"]
 
             
                 # Open first element
                 # FuncCtrl(parent, func)
-                if isinstance(func, CompositeFn):
+                if isinstance(self.func, CompositeFn):
                     addedtab = FuncCtrl(
                         self.main_frame.function_notebooks,
                         self.func.subfns[0],
@@ -1651,41 +1636,16 @@ class MyApp(wx.App):
 
 def package_contents(package_name):
 
-    MODULE_EXTENSIONS = ".py"
-
-    file, pathname, description = imp.find_module(package_name)
-
-    if file:
-
-        raise ImportError("Not a package: %r", package_name)
-
+    module = importlib.__import__('percolate')
     files = []
-
-    for module in os.listdir(pathname):
     
-        if module == "__pycache__":
-        
+    for module in os.listdir(module.__path__[0]+ "/Functions"):
+        if module.startswith("_"):
             pass
-            
-        elif module == "__init__.py":
-        
-            pass
-            
         else:
-
             files.append(module)
 
     return files
-
-
-def module_path(package_name):
-
-    MODULE_EXTENSIONS = (".py", ".pyc", ".pyo")
-
-    file, pathname, description = imp.find_module(package_name)
-
-    return pathname
-
 
 def percolate():
     # call app

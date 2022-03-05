@@ -55,7 +55,6 @@ class SquareGen(Function):
         self.amplitude = free_int_input(self, "amp", 0, 20, 100)
         self.square = ArrayOutput(self, "square", self.read_square)
 
-
     def getpath(self, name):
 
         return_path = str(self) + "/" + str(name)

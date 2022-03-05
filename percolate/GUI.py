@@ -1221,7 +1221,8 @@ class CtrlFrame(wx.Frame):
         )
         
         #create a dictionary so Aui manager has a reference to all notebooks and function trees.
-        self.function_notebooks = dict()
+        self.function_control = dict()
+        
     
         self.Show()
 
@@ -1236,7 +1237,58 @@ class DropTarget(wx.DropTarget):
 
         # drop the port into window
         self.window.DisplayData(data)
+def setup_function(application, functionname):   
 
+    #import selected function dynamically
+    path = importlib.import_module('.%s'% functionname, 'percolate.Functions')
+    application.func = path.function
+    
+    application.main_frame.function_control_tree = wx.TreeCtrl(application.main_frame)
+
+    application.main_frame.function_control["Function Ctrl"].AddPage(
+            application.main_frame.function_control_tree,
+            caption=application.func.name,
+    )
+
+    # repopulate tree with subfunctions
+    control_root = application.main_frame.function_control_tree.AddRoot(
+        application.func.name, data=application.func
+    )
+    application.create_controls(application.func, control_root)
+    
+    if application.main_frame.__auiManager.GetPane(application.func.name).IsOk():   
+    
+        print("Function with this name already exists")
+        
+    
+    else:
+        if application.main_frame.__auiManager.GetPane("Function view").IsOk():
+
+            application.main_frame.__auiManager.GetPane("Function view").caption = application.func.name
+            application.main_frame.__auiManager.GetPane("Function view").name = application.func.name
+            application.main_frame.function_control = application.main_frame.function_control["Function view"]
+
+    
+        # Open first element
+        if isinstance(application.func, CompositeFn):
+            addedtab = FuncCtrl(
+                application.main_frame.function_control,
+                application.func.subfns[0],
+                application.main_frame.__auiManager,
+                application,
+                application.func.subfns[0].name,
+            )
+
+            application.addedtabs[application.func.subfns[0].name] = addedtab
+            # add the tab with event id as name
+            application.main_frame.function_control.AddPage(
+                application.addedtabs[application.func.subfns[0].name],
+                caption=application.func.subfns[0].name,
+            )
+    application.main_frame.__auiManager.Update()
+
+    # create loop
+    application.MainLoop()
 
 class MyApp(wx.App):
     def OnInit(self):
@@ -1267,40 +1319,34 @@ class MyApp(wx.App):
 
         # create menubar
         self.main_frame.menubar = wx.MenuBar()
-        self.main_frame.fileMenu = wx.Menu()
-        self.main_frame.submenu = wx.MenuItem()
 
-        self.main_frame.PlotMenu = wx.Menu()
-    
+        #fetch funcitons from Function directory
+        self.main_frame.functionMenu = wx.Menu()
         for file in package_contents("percolate/Functions"):
-            self.main_frame.fileMenu.Append(wx.ID_ANY, file)
+            self.main_frame.functionMenu.Append(wx.ID_ANY, file)
 
+        #canvas for plotting
+        self.main_frame.PlotMenu = wx.Menu()
         self.main_frame.PlotMenu.Append(wx.ID_ANY, "Canvas")
-        # create menu hierarchy
 
-        # self.main_frame.open_file = self.main_frame.fileMenu.Append(wx.ID_ANY, 'Select function...')
-        self.main_frame.menubar.Append(self.main_frame.fileMenu, "&Load Function")
+        # create menu hierarchy
+        self.main_frame.menubar.Append(self.main_frame.functionMenu, "&Load Function")
         self.main_frame.menubar.Append(self.main_frame.PlotMenu, "Plot")
 
+        #add to menubar
         self.main_frame.SetMenuBar(self.main_frame.menubar)
 
-        # create tree ctrl
-        #self.main_frame.tree_ctrl = wx.TreeCtrl(self.main_frame)
-
-        #create function ctrl tree
-        #self.main_frame.function_control_tree["initial function control"] = wx.TreeCtrl(self.main_frame)
-
-        #create a notebook for the func ctrl trees to sit
-        self.main_frame.function_notebooks["Function Ctrl"] = aui.AuiNotebook(self.main_frame)
-        self.main_frame.function_notebooks["Function Ctrl"].SetAGWWindowStyleFlag(
+        #create a funciton control for the func ctrl trees to sit
+        self.main_frame.function_control["Function Ctrl"] = aui.AuiNotebook(self.main_frame)
+        self.main_frame.function_control["Function Ctrl"].SetAGWWindowStyleFlag(
             aui.AUI_NB_SCROLL_BUTTONS
             | aui.AUI_NB_TAB_MOVE
-            |aui.AUI_NB_TAB_EXTERNAL_MOVE
-            
+            |aui.AUI_NB_TAB_EXTERNAL_MOVE   
         )
+
         # create aui notebook
-        self.main_frame.function_notebooks["Function view"] = aui.AuiNotebook(self.main_frame)
-        self.main_frame.function_notebooks["Function view"].SetAGWWindowStyleFlag(
+        self.main_frame.function_control["Function view"] = aui.AuiNotebook(self.main_frame)
+        self.main_frame.function_control["Function view"].SetAGWWindowStyleFlag(
             aui.AUI_NB_WINDOWLIST_BUTTON
             | aui.AUI_NB_SCROLL_BUTTONS
             | aui.AUI_NB_TAB_EXTERNAL_MOVE
@@ -1310,7 +1356,7 @@ class MyApp(wx.App):
         )
 
         self.main_frame.__auiManager.AddPane(
-            self.main_frame.function_notebooks["Function Ctrl"],
+            self.main_frame.function_control["Function Ctrl"],
             aui.AuiPaneInfo()
             .Name("Function Ctrl")
             .Caption("Function Ctrl")
@@ -1321,7 +1367,7 @@ class MyApp(wx.App):
 
         # add panes to the manager to sort out display
         self.main_frame.__auiManager.AddPane(
-            self.main_frame.function_notebooks["Function view"],
+            self.main_frame.function_control["Function view"],
             aui.AuiPaneInfo()
             .Name("Function view")
             .Caption("Function view")
@@ -1330,25 +1376,20 @@ class MyApp(wx.App):
             .MinSize(400,400),
         )
 
-
-        # just update to let the manager know
+        # update to let the manager know about changes
         self.main_frame.__auiManager.Update()
 
         # Bind handlers to controls
         self.main_frame.Bind(wx.EVT_CLOSE, self.WindowOnClose)
-
-        # for function in self.main_frame.fileMenu:
-
-        self.Bind(wx.EVT_MENU, self.on_func_select)
-
+        self.main_frame.functionMenu.Bind(wx.EVT_MENU, self.on_func_select)
+        #self.Bind(wx.EVT_MENU, self.on_func_select)
+        
         self.main_frame.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_clicked)
 
         self.main_frame.PlotMenu.Bind(wx.EVT_MENU, self.On_Create_MaxPlot)
-        # uncomment for shortcut
-        # self.on_file_select(None)
-        # self.main_frame.Bind(aui.EVT_AUI_PANE_CLOSE, self.on_pane_close)
+
         self.main_frame.__auiManager.Bind(aui.EVT_AUI_PANE_CLOSE, self.on_pane_close)
-        self.main_frame.function_notebooks["Function view"].Bind(
+        self.main_frame.function_control["Function view"].Bind(
             aui.EVT_AUINOTEBOOK_PAGE_CLOSED, self.on_tab_close
         )
 
@@ -1357,9 +1398,17 @@ class MyApp(wx.App):
         self.count = 0
         self.addedtabs = dict()
 
+    def on_func_select(self, evt):
+        
+        if self.func: #if function exists
+            app = MyApp(False)
+            setup_function(app, evt.GetEventObject().GetLabel(evt.GetId())[:-3])
+            
+        else:#if function new
+            setup_function(self, evt.GetEventObject().GetLabel(evt.GetId())[:-3])
+
     def on_tab_close(self, evt):
 
-        auinotebook = evt.GetEventObject()
         page_idx = evt.GetSelection()
         self.main_frame.__auiNotebook.RemovePage(page_idx)
         self.main_frame.__auiNotebook.DeletePage(page_idx)
@@ -1396,14 +1445,14 @@ class MyApp(wx.App):
         if self.main_frame.__auiManager.GetPane(self.func.name).IsOk():
         
             self.addedtabs[evt_name] = FuncCtrl(
-                self.main_frame.function_notebooks,
+                self.main_frame.function_control,
                 evt_data,
                 self.main_frame.__auiManager,
                 self,
                 evt_name,
             )
             
-            tab = self.main_frame.function_notebooks.AddPage(self.addedtabs[evt_name], caption=evt_name)
+            tab = self.main_frame.function_control.AddPage(self.addedtabs[evt_name], caption=evt_name)
 
     def On_Create_MaxPlot(self, evt):
 
@@ -1419,7 +1468,7 @@ class MyApp(wx.App):
         self.canvas_dict[canvas_id] = MaxPlotControl(
             self,
             canvas_id,
-            self.main_frame.function_notebooks,
+            self.main_frame.function_control,
             self.main_frame.__auiManager,
             self,
         )
@@ -1467,144 +1516,6 @@ class MyApp(wx.App):
     def WindowOnClose(self, event):
 
         self.main_frame.Destroy()
-
-
-
-
-    def on_func_select(self, evt):
-
-        if self.func:
-            
-            app = MyApp(False)
-            
-            # get id of selected item
-            id_selected = evt.GetId()
-
-            # get path in order to dynamically iomport function
-            # path = os.path.join(os.getcwd(), 'Functions', evt.GetEventObject().GetLabel(id_selected))
-
-            path = importlib.import_module('.%s'% evt.GetEventObject().GetLabel(id_selected)[:-3], 'percolate.Functions')
-            app.func = path.function
-            # func = path.function
-            # path = module_path(
-            #     "percolate/Functions/%s" % evt.GetEventObject().GetLabel(id_selected)[:-3]
-            # )
-            # # dynamical import
-            # func = import_path(path).function
-
-            # declare func
-            #app.func = func
-            
-            app.main_frame.function_control_tree = wx.TreeCtrl(app.main_frame)
-
-            app.main_frame.function_notebooks["Function Ctrl"].AddPage(
-                    app.main_frame.function_control_tree,
-                    caption=app.name,
-            )
-
-            # repopulate tree with subfunctions
-            control_root = app.main_frame.function_control_tree.AddRoot(
-                app.func.name, data=app.func
-            )
-            app.create_controls(app.func, control_root)
-            
-            if app.main_frame.__auiManager.GetPane(app.func.name).IsOk():   
-            
-                print("Function with this name already exists")
-                
-            
-            else:
-                if app.main_frame.__auiManager.GetPane("Function view").IsOk():
-
-                    app.main_frame.__auiManager.GetPane("Function view").caption = app.func.name
-                    app.main_frame.__auiManager.GetPane("Function view").name = app.func.name
-                    app.main_frame.function_notebooks = app.main_frame.function_notebooks["Function view"]
-
-            
-                # Open first element
-                if isinstance(app.func, CompositeFn):
-                    addedtab = FuncCtrl(
-                        app.main_frame.function_notebooks,
-                        app.func.subfns[0],
-                        app.main_frame.__auiManager,
-                        app,
-                        app.func.subfns[0].name,
-                    )
-        
-                    app.addedtabs[app.func.subfns[0].name] = addedtab
-                    # add the tab with event id as name
-                    app.main_frame.function_notebooks.AddPage(
-                        app.addedtabs[app.func.subfns[0].name],
-                        caption=app.func.subfns[0].name,
-                    )
-            app.main_frame.__auiManager.Update()
-
-            # create loop
-            app.MainLoop()
-
-        else:
-            # get id of selected item
-            id_selected = evt.GetId()
-
-            # get path in order to dynamically iomport function
-            # path = os.path.join(os.getcwd(), 'Functions', evt.GetEventObject().GetLabel(id_selected))
-            path = importlib.import_module('.%s'% evt.GetEventObject().GetLabel(id_selected)[:-3], 'percolate.Functions')
-            self.func = path.function
-            # path = module_path(
-            #     "percolate/Functions/%s" % evt.GetEventObject().GetLabel(id_selected)[:-3]
-            # )
-            # # dynamical import
-            # func = import_path(path).function
-
-            # declare func
-            #self.func = func
-            
-            self.main_frame.function_control_tree = wx.TreeCtrl(self.main_frame)
-
-            self.main_frame.function_notebooks["Function Ctrl"].AddPage(
-                    self.main_frame.function_control_tree,
-                    caption=self.func.name,
-            )
-
-            # repopulate tree with subfunctions
-            self.control_root = self.main_frame.function_control_tree.AddRoot(
-                self.func.name, data=self.func
-            )
-            self.create_controls(self.func, self.control_root)
-            
-            if self.main_frame.__auiManager.GetPane(self.func.name).IsOk():   
-            
-                print("Function with this name already exists")
-                
-            
-            else:
-                #change the name of the notebook to the function name 
-                if self.main_frame.__auiManager.GetPane("Function view").IsOk():
-
-                    self.main_frame.__auiManager.GetPane("Function view").caption = self.func.name
-                    self.main_frame.__auiManager.GetPane("Function view").name = self.func.name
-                    self.main_frame.function_notebooks = self.main_frame.function_notebooks["Function view"]
-
-            
-                # Open first element
-                # FuncCtrl(parent, func)
-                if isinstance(self.func, CompositeFn):
-                    addedtab = FuncCtrl(
-                        self.main_frame.function_notebooks,
-                        self.func.subfns[0],
-                        self.main_frame.__auiManager,
-                        self,
-                        self.func.subfns[0].name,
-                    )
-        
-                    self.addedtabs[self.func.subfns[0].name] = addedtab
-                    # add the tab with event id as name
-                    self.main_frame.function_notebooks.AddPage(
-                        self.addedtabs[self.func.subfns[0].name],
-                        caption=self.func.subfns[0].name,
-                    )
-            self.main_frame.__auiManager.Update()
-
 
     def create_controls(self, func, parent_node):
         """Create child nodes"""

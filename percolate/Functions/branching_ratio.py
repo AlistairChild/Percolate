@@ -52,19 +52,19 @@ from percolate.Subfunctions.area import Area
 class Branching_ratio(CompositeFn):
     def __init__(self):
 
-        super().__init__("Branching_ratio")
+        super().__init__(None,"Branching_ratio")
 
         # self.multioutput = MuxOutput("Mux")
 
         # reference to the functions
-        dr = DirReader()
+        dr = DirReader(self)
         # fr = FileReader()
-        p = XMCDStreamParser()
-        bs = background_subtraction()
-        norm = Normalise()
-        step = step_subtraction()
-        xas = Xas()
-        area = Area()
+        p = XMCDStreamParser(self)
+        bs = background_subtraction(self)
+        norm = Normalise(self)
+        step = step_subtraction(self)
+        xas = Xas(self)
+        area = Area(self)
 
         self.subfns.append(dr)
         # self.subfns.append(fr)

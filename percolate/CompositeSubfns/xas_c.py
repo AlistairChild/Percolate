@@ -62,16 +62,16 @@ from percolate.Subfunctions.integrate import Integrate
 
 
 class Xas_c(CompositeFn):
-    def __init__(self, inputs, outputs):
+    def __init__(self, parent, inputs, outputs):
 
-        super().__init__("XAS_composite")
+        super().__init__(parent, "XAS_composite")
 
         # xas = Xas()
 
-        bs_xas = background_subtraction()
-        ad = addition()
-        intgr_xas = Integrate()
-        r_val = FindValue("r_val")
+        bs_xas = background_subtraction(self)
+        ad = addition(self)
+        intgr_xas = Integrate(self)
+        r_val = FindValue(self, "r_val")
 
         # self.subfns.append(xas)
         self.subfns.append(bs_xas)

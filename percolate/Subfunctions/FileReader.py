@@ -43,8 +43,8 @@ from percolate.framework import Function
 class FileReader(Function):
     """Given a file path"""
 
-    def __init__(self):
-        super().__init__("FileReader")
+    def __init__(self, parent):
+        super().__init__(parent, "FileReader")
 
         # create ports
         self.file_path = FilePathInput(self, "in")

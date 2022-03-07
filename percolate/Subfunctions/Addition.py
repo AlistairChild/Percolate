@@ -49,9 +49,9 @@ from percolate.toolkit.background_xmcd import background_xmcd
 class addition(Function):
     """Adds two nd arrays together"""
 
-    def __init__(self):
+    def __init__(self,parent):
 
-        super().__init__("Addition")
+        super().__init__(parent,"Addition")
 
         # inputs
         self.A = StreamInput(self, "A")

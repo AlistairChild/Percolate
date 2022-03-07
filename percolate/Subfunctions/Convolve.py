@@ -47,9 +47,9 @@ class convolve(Function):
     This create a sin function where the user can alter the frequency and amplitude
     """
 
-    def __init__(self):
+    def __init__(self, parent= None):
 
-        super().__init__("Convolve")
+        super().__init__(parent,"Convolve")
 
         # ports
         self.A = StreamInput(self, "A")

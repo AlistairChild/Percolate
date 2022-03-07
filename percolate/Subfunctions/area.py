@@ -47,9 +47,9 @@ from percolate.toolkit.check_values_in_range import check_values_in_range
 
 
 class Area(Function):
-    def __init__(self):
+    def __init__(self,parent):
 
-        super().__init__("area")
+        super().__init__(parent, "area")
 
         # input ports
         self.input = StreamInput(self, "inputarray")

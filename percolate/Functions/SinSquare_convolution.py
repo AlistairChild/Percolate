@@ -55,12 +55,12 @@ class SinSquareConv(CompositeFn):
 
     def __init__(self):
 
-        super().__init__("SinSquareConv")
+        super().__init__(None, "SinSquareConv")
 
         # subfunctions used in this function
-        sin = SinGen()
-        square = SquareGen()
-        conv = addition()
+        sin = SinGen(self)
+        square = SquareGen(self)
+        conv = addition(self)
 
         # subfns
         self.subfns.append(sin)

@@ -55,9 +55,9 @@ class args_difference:
 class difference(Function):
     """takes the subtracts on spectra from another"""
 
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("Difference")
+        super().__init__(parent, "Difference")
 
         # inputs
         self.A = StreamInput(self, "a_p_norm")

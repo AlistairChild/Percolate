@@ -64,9 +64,9 @@ class args_background:
 
 
 class background_subtraction2(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("background_subtraction")
+        super().__init__(parent, "background_subtraction")
 
         # streamed inputs
         # self.e = StreamInput(self, "e")
@@ -155,9 +155,9 @@ class background_subtraction2(Function):
 
 
 class background_subtraction(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("background_subtraction")
+        super().__init__(parent, "background_subtraction")
 
         # streamed inputs
         # self.e = StreamInput(self, "e")

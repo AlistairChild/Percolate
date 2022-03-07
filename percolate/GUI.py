@@ -103,6 +103,7 @@ from percolate.framework import choice_input
 from percolate.framework import Function
 from percolate.framework import Edge
 from percolate.framework import CompositeFn
+from percolate.framework import GridInput
 
 # matplotlib (Plotting)
 import matplotlib
@@ -117,7 +118,124 @@ from matplotlib.figure import Figure
 import numpy as np
 import matplotlib.pyplot as pl
 import math
+linestyle = [
 
+     ('solid', 'solid'),      # Same as (0, ()) or '-'
+     ('dotted', 'dotted'),    # Same as (0, (1, 1)) or '.'
+     ('dashed', 'dashed'),    # Same as '--'
+     ('dashdot', 'dashdot'),
+     #parameterised
+     ('dotted',                (0, (1, 1))),
+     ('densely dotted',        (0, (1, 1))),
+
+     ('dashed',                (0, (5, 5))),
+     ('densely dashed',        (0, (5, 1))),
+
+     ('dashdotted',            (0, (3, 5, 1, 5))),
+     ('densely dashdotted',    (0, (3, 1, 1, 1))),
+
+     ('dashdotdotted',         (0, (3, 5, 1, 5, 1, 5))),
+     ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1)))
+
+]
+markers = [
+    ".",
+    "o",
+    "v",
+    "^",
+    "<",
+    ">",
+    "1",
+    "8",
+    "s",
+    "p",
+    "P",
+    "*",
+    "+",
+    "D",
+    "d",
+
+]
+
+colors = [
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "green",
+    "orange",
+    "turquoise",
+    "pink",
+    "blue",
+    "black",
+    "red",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "black",
+    "red",
+    "blue",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "turquoise",
+    "pink",
+    "blue",
+    "black",
+    "red",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "black",
+    "red",
+    "blue",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+    "turquoise",
+    "pink",
+    "blue",
+    "black",
+    "red",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "black",
+    "red",
+    "blue",
+    "blue",
+    "black",
+    "brown",
+    "red",
+    "yellow",
+    "green",
+    "orange",
+]
 
 def exists_in_list(list, item):
 
@@ -134,7 +252,7 @@ def exists_in_dict(dict, item):
 class InputControlBase(Function):
     def __init__(self, target_port, name="source"):
 
-        super().__init__(name)
+        super().__init__(None, name)
 
         # Auto Create Edge from local output to remote input port
         self.outport = OutPort(self, "auto", self.read)
@@ -156,7 +274,7 @@ class InputControlBase(Function):
 class OutputControlBase(Function):
     def __init__(self, source_port, name="sink"):
 
-        super().__init__(name)
+        super().__init__(None, name)
 
         # Auto Create Edge from local input to remote source port
         self.in_port = InPort(self, "auto")
@@ -199,16 +317,19 @@ class MyDropTarget(wx.TextDropTarget):
         self.parent = parent
 
     def OnDropText(self, x, y, data):
-        
+        #06/03/2022
+        #port = self.app.lookup_port(data)
+
         port = self.app.lookup_port(data)
+        
         self.parent.DisplayData(port)
         self.parent.DisplayPorts(port)
 
         return True
 
 
-
 class MaxPlotControl(OutputControlBase):
+
     def __init__(self, parent, port, aui_notebook, manager, app):
 
         # dictionary for plots
@@ -242,8 +363,8 @@ class MaxPlotControl(OutputControlBase):
         fgs = wx.FlexGridSizer(4, 1, 10, 10)
 
         self.panel.fig = Figure((5, 3), 75)
-        self.panel.canvas = FigureCanvas(self.panel, 1, self.panel.fig)
-        self.panel.toolbar = NavigationToolbar(self.panel.canvas)  # matplotlib toolbar
+        self.panel.fig.canvas = FigureCanvas(self.panel, 1, self.panel.fig)
+        self.panel.toolbar = NavigationToolbar(self.panel.fig.canvas)  # matplotlib toolbar
         self.panel.toolbar.Realize()
 
         self.items_in_plot = wx.CheckListBox(
@@ -252,11 +373,11 @@ class MaxPlotControl(OutputControlBase):
 
         canvas_sizer = wx.BoxSizer(wx.HORIZONTAL)
         canvas_sizer.AddMany(
-            [(self.panel.canvas, 5, wx.EXPAND), (self.items_in_plot, 1, wx.EXPAND)]
+            [(self.panel.fig.canvas, 5, wx.EXPAND), (self.items_in_plot, 1, wx.EXPAND)]
         )
 
-        dt = MyDropTarget(self, self.panel.canvas, app)
-        self.panel.canvas.SetDropTarget(dt)
+        dt = MyDropTarget(self, self.panel.fig.canvas, app)
+        self.panel.fig.canvas.SetDropTarget(dt)
 
         fgs.AddMany(
             [
@@ -279,6 +400,7 @@ class MaxPlotControl(OutputControlBase):
             wx.EVT_CHECKBOX, self.on_guideline_request, self.guidelinesrequest
         )
         self.panel.Bind(wx.EVT_CHECKLISTBOX, self.on_port_select, self.items_in_plot)
+        self.panel.fig.canvas.mpl_connect('motion_notify_event', self.mouse_move)
 
         self.ports = []
         self.evaluate()
@@ -289,7 +411,15 @@ class MaxPlotControl(OutputControlBase):
         self.guidelines = True
 
         self.selected_ports = []
-
+        
+    def mouse_move(self, evt):
+    
+        x, y = evt.xdata, evt.ydata
+        #self.a.format_coords = 'x:%1.4f, y:%1.4f'%(x , y)
+        #self.panel.fig.canvas.draw()
+        #self.panel.toolbar.update()
+        #print(x, y)
+        #self.a.text('x:%1.4s, y:%1.4s'%(x , y))
     def on_port_select(self, evt):
 
         self.ports = []
@@ -360,100 +490,34 @@ class MaxPlotControl(OutputControlBase):
         self.evaluate()
 
     def evaluate(self):
-
+        
+        
         # clear figure
         self.panel.fig.clear()
 
         # add subplot
         self.a = self.panel.fig.add_subplot(111)
-
+        self.a.grid(False)
+        
+        
+        def format_coord(x, y):
+            col = int(x+0.5)
+            row = int(y+0.5)
+            if col>=0 and col<numcols and row>=0 and row<numrows:
+                z = X[row,col]
+                return 'x=%1.4f, y=%1.4f, z=%1.4f'%(x, y, z)
+            else:
+                return 'x=%1.4f, y=%1.4f'%(x, y)
+        
         # create color dictionary
-        colors = [
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-        ]
+
 
         # we need to accompany multiple different ports
         count = 0
         for port in self.ports:
-
+            
             # data
-
+            
             x = np.array(port.read()["data"][0])
             y = np.array(port.read()["data"][1])
             lbl = list(port.read()["label"])
@@ -462,47 +526,52 @@ class MaxPlotControl(OutputControlBase):
             count = count + 1
 
             if x is not None and len(x.shape) > 1:
-                count = 0
+                
                 # for item in x:
                 for x_data, y_data, label in zip(x, y, lbl):
                     count = count + 1
                     try:
-
+    
                         for line in lines:
-                            if self.guidelines:
-                                self.panel.lines = self.a.axvline(line, 0, 1)
-
+        
+                                if line:
+            
+                                    self.panel.lines = self.a.axvline(line, 0, 1)
+        
                     except:
+        
                         pass
 
                     if len(x) != len(y):
                         y = "".join(y)
                         self.panel.lines = self.a.plot(
-                            x_data, y_data, color=colors[count], label=y
+                            x_data, y_data, color=colors[count], label = y
                         )
                     else:
                         if self.datapoints and self.drawline:
                             self.panel.lines = self.a.plot(
                                 x_data,
                                 y_data,
+                                linestyle = linestyle[count%(len(linestyle))][1],
                                 color=colors[count],
-                                label=label + " - " + str(port.name),
+                                label = label + " - " + str(port.name),
                             )
                             self.a.scatter(
-                                x_data, y_data, marker="o", color="black", s=5
+                                x_data, y_data, marker=markers[count%(len(markers))], color="black", s=15, label = label + " - " + str(port.name)
                             )
 
                         elif self.drawline:
                             self.panel.lines = self.a.plot(
                                 x_data,
                                 y_data,
+                                linestyle = linestyle[count%(len(linestyle))][1],
                                 color=colors[count],
                                 label=label + " - " + str(port.name),
                             )
 
                         elif self.datapoints:
                             self.a.scatter(
-                                x_data, y_data, marker="o", color="black", s=5
+                                x_data, y_data, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = label + " - " + str(port.name)
                             )
 
                         else:
@@ -518,22 +587,35 @@ class MaxPlotControl(OutputControlBase):
 
                         self.a.legend(lines, labels)
 
-                    # self.a.legend()
+                        self.a.legend()
 
             else:
+                self.a.format_coords = format_coord
+
+                try:
+
+                    for line in lines:
+    
+                        if line:
+    
+                            self.panel.lines = self.a.axvline(line, 0, 1)
+    
+                except:
+    
+                    pass
                 if self.datapoints and self.drawline:
                     self.panel.lines = self.a.plot(
-                        x, y, color=colors[count], label=lbl[0] + " - " + str(port.name)
+                        x, y, linestyle = linestyle[count%(len(linestyle))][1], color=colors[count], label=lbl[0] + " - " + str(port.name)
                     )
-                    self.a.scatter(x, y, marker="o", color="black", s=5)
+                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = lbl[0] + " - " + str(port.name))
 
                 elif self.drawline:
                     self.panel.lines = self.a.plot(
-                        x, y, color=colors[count], label=lbl[0] + " - " + str(port.name)
+                        x, y,linestyle = linestyle[count%(len(linestyle))][1], color=colors[count], label=lbl[0] + " - " + str(port.name)
                     )
 
                 elif self.datapoints:
-                    self.a.scatter(x, y, marker="o", color="black", s=5)
+                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[-count], s=15, label = lbl[0] + " - " + str(port.name))
 
                 else:
                     pass
@@ -541,10 +623,10 @@ class MaxPlotControl(OutputControlBase):
                 if self.legend:
 
                     self.a.legend()
-
+                    
+        
         self.panel.fig.canvas.draw()
         self.panel.toolbar.update()
-
 
 class MinimalPlotControl(OutputControlBase):
     """Represents a vector output in one line
@@ -563,9 +645,12 @@ class MinimalPlotControl(OutputControlBase):
 
         self.fig = Figure((5, 0.8), 75)
         self.canvas = FigureCanvas(parent, -1, self.fig)
-
+        
+        self.export_button = wx.Button(self.parent, label = " -> ")
+        
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.canvas, 7, wx.ALIGN_CENTRE | wx.LEFT)
+        sizer.Add(self.canvas, 10, wx.ALIGN_CENTRE | wx.LEFT)
+        sizer.Add(self.export_button, 1, wx.ALIGN_CENTRE | wx.LEFT)
         fgs.Add(sizer, 0, wx.TOP | wx.EXPAND)
 
         # handlers
@@ -573,9 +658,37 @@ class MinimalPlotControl(OutputControlBase):
         self.canvas.mpl_connect("axes_leave_event", self.leave_axes)
         self.canvas.mpl_connect("button_press_event", self.OnDrag)
         self.canvas.mpl_connect("button_release_event", self.OnDrag)
-
+        
+        self.export_button.Bind(wx.EVT_BUTTON, self.OnExportData)
+        
         self.evaluate()
+        
+    def OnExportData(self, event):
+        x = np.array(self.port.read()["data"][0])
+        y = np.array(self.port.read()["data"][1])
+        
+        
+        fdlg = wx.FileDialog(self.parent, "Input setting file path", "", "", "CSV files(*.csv)|*.*", wx.FD_SAVE)
+        
+        if fdlg.ShowModal() == wx.ID_OK:
+            self.save_path = fdlg.GetPath() + ".csv"
+        
+        with open(self.save_path, "w",newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Energy", "Signal"]) 
+            
+            if x.ndim and y.ndim == 1:
+                for i in range(len(x)):
+                    writer.writerow([x[i], y[i]]) 
+                    
+            if x.ndim and y.ndim == 2:
+                for i in range(len(x)):
+                    for j in range(len(x[i])):
+                        writer.writerow([x[i][j], y[i][j]]) 
+                
 
+                        
+        
     def enter_axes(self, event):
         event.inaxes.patch.set_facecolor("lightgrey")
         event.canvas.draw()
@@ -608,86 +721,6 @@ class MinimalPlotControl(OutputControlBase):
 
         a = self.fig.add_subplot(111)
 
-        colors = [
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-            "turquoise",
-            "pink",
-            "blue",
-            "black",
-            "red",
-            "green",
-            "orange",
-            "pink",
-            "purple",
-            "black",
-            "red",
-            "blue",
-            "blue",
-            "black",
-            "brown",
-            "red",
-            "yellow",
-            "green",
-            "orange",
-        ]
-
         x = np.array(self.port.read()["data"][0])
 
         y = np.array(self.port.read()["data"][1])
@@ -713,6 +746,7 @@ class MinimalPlotControl(OutputControlBase):
             self.canvas.lines = a.plot(x, y, color=colors[0], label=lbl)
 
         if x.ndim and y.ndim == 2:
+
             count = 0
             for xi, yi, label in zip(x, y, lbl):
                 count = count + 1
@@ -773,7 +807,6 @@ class MinimalPlotControl(OutputControlBase):
         for key, item in self.app.canvas_dict.items():
 
             self.app.canvas_dict[key].evaluate()
-
 
 class FigureStack(OutputControlBase):
     # ----------------------------------------------------------------------
@@ -1105,7 +1138,52 @@ class Equation_display:
 
         fgs.Add(sizer, 0, wx.TOP | wx.EXPAND)
 
+class GridControl(InputControlBase):
 
+    def __init__(self, parent, fgs, target_port):
+    
+        super().__init__(target_port, "GridControl(%s)" % target_port.name)
+    
+        self.target_port = target_port
+        
+        print(parent.fgs.GetSize())
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        # print(self.port.max)
+
+        self.ctrl = wx.grid.Grid(parent, name = target_port.name)
+        self.ctrl.name = self.target_port.name
+        self.ctrl.CreateGrid(20, 4)
+
+        #self.ctrl.GetColSizes()
+        #self.ctrl.SetDefaultRowSize(20)
+        self.ctrl.SetDefaultColSize(250)
+
+        
+        self.ctrl.SetColLabelValue(0, "Center of peak")
+        self.ctrl.SetColLabelValue(1, "Type")
+        self.ctrl.SetColLabelValue(2, "Height")
+        self.ctrl.SetColLabelValue(3, "Sigma")
+        
+        #sizer.Add(panel, 1, wx.EXPAND)
+        
+        fgs.Add(self.ctrl , 0, wx.EXPAND)
+
+        self.ctrl.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_value)
+
+    def on_value(self, evt):
+    
+        col = evt.GetCol()
+        row = evt.GetRow()
+        
+        #put data into grid object
+        self.target_port.grid[row][col] = self.ctrl.GetCellValue(row,col)
+        
+        self.changed()
+
+    def read(self):
+
+        return self.target_port
 class PortControl:
     def __init__(self, parent, fgs, port, func, aui_notebook, manager, app):
 
@@ -1150,6 +1228,9 @@ class PortControl:
         elif isinstance(port, bool_input):
             self.io = CheckControl(parent, fgs, port)
 
+        elif isinstance(port, GridInput):
+            self.io = GridControl(parent, fgs, port)
+
         elif isinstance(port, func_Output):
             print("No Implementation for func_Output")
 
@@ -1163,7 +1244,6 @@ class PortControl:
 
         # dictionary contaning all io ports to be used for drag and drop reference
         app.io_dictionary[self.port] = self.io
-
 
 class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
     def __init__(self, aui_notebook, func, manager, app, name):
@@ -1180,7 +1260,7 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
         # Sizers
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        fgs = wx.FlexGridSizer(20, 2, 10, 10)
+        self.fgs = wx.FlexGridSizer(20, 2, 10, 10)
 
         # print("FuncCtrl " + func.name)
         for port in func.inputs:
@@ -1189,17 +1269,17 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
                 continue  # skip input ports with a edge already attached
             # print("Port in : " + port.name)
 
-            PortControl(self, fgs, port, func, aui_notebook, manager, app)
+            PortControl(self, self.fgs, port, func, aui_notebook, manager, app)
 
         for port in func.outputs:
             # print("Port out : " + port.name)
 
-            PortControl(self, fgs, port, func, aui_notebook, manager, app)
+            PortControl(self, self.fgs, port, func, aui_notebook, manager, app)
 
         # fgs.AddGrowableRow(2, 1)
-        fgs.AddGrowableCol(1, 1)
+        self.fgs.AddGrowableCol(1, 1)
 
-        hbox.Add(fgs, proportion=2, flag=wx.ALL | wx.EXPAND, border=15)
+        hbox.Add(self.fgs, proportion=2, flag=wx.ALL | wx.EXPAND, border=15)
 
         self.SetSizer(hbox)
 
@@ -1346,6 +1426,7 @@ class MyApp(wx.App):
         self.func =None
         self.count = 0
         self.addedtabs = dict()
+
     def setup_function(self, application, functionname):  
 
         
@@ -1399,6 +1480,7 @@ class MyApp(wx.App):
 
         # create loop
         application.MainLoop()
+        
     def on_func_select(self, evt):
         
         if self.func: #if function exists
@@ -1429,11 +1511,9 @@ class MyApp(wx.App):
         for key, value in self.addedtabs.items():
 
             if value.func == evt_data:
-
+                
                 print(evt_data)
-
                 print("exists")
-
                 return
 
         for key, item in self.addedtabs.items():
@@ -1487,32 +1567,10 @@ class MyApp(wx.App):
         self.main_frame.__auiManager.Update()
 
     def lookup_port(self, path):
-    
-        #return path
-        # TODO: extend for a n entry path
-        
-        directions = path.split("/")
-        
-        if str(self.func) == directions[0]:
-        
-            return getattr(self.func, directions[1])
-            
-        else:
-            for subfn in self.func.subfns:
-            
-                if isinstance(subfn, CompositeFn):
-                
-                    for subsubfn in subfn.subfns:
+        print("function name " + self.func.name)
+        port = self.func.resolve_path_to_port(path)
 
-                        if str(subsubfn) == directions[0]:
-
-                            return getattr(subsubfn, directions[1])
-                else:
-                
-                    if str(subfn) == directions[0]:
-
-                        return getattr(subfn, directions[1])
-
+        return port
 
     def WindowOnClose(self, event):
 

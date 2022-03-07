@@ -64,19 +64,19 @@ class XMCD_XAS_comparison(CompositeFn):
 
     def __init__(self):
 
-        super().__init__("XMCD_XAS_comparison")
+        super().__init__(None, "XMCD_XAS_comparison")
 
         # create instance
-        dr = DirReader()
-        p = XMCDStreamParser()
-        bs = background_subtraction2()
-        bs2 = background_subtraction2()
-        norm = Normalise()
-        norm2 = Normalise()
-        step = step_subtraction()
-        diff = difference()
-        diff_xas_xmcd = difference()
-        xas = Xas()
+        dr = DirReader(self)
+        p = XMCDStreamParser(self)
+        bs = background_subtraction2(self)
+        bs2 = background_subtraction2(self)
+        norm = Normalise(self)
+        norm2 = Normalise(self)
+        step = step_subtraction(self)
+        diff = difference(self)
+        diff_xas_xmcd = difference(self)
+        xas = Xas(self)
 
         # subfns
         self.subfns.append(dr)

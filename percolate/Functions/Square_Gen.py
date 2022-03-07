@@ -46,9 +46,9 @@ class SquareGen(Function):
     This create a sin function where the user can alter the frequency and amplitude
     """
 
-    def __init__(self):
+    def __init__(self, parent= None):
 
-        super().__init__("SquareGen")
+        super().__init__(parent, "SquareGen")
 
         # ports
         self.frequency = free_int_input(self, "freq", 1, 3, 5)

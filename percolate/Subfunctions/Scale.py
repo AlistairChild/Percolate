@@ -57,9 +57,9 @@ class args_scale:
 class scale(Function):
     """takes the subtracts on spectra from another"""
 
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("Scale")
+        super().__init__(parent, "Scale")
 
         # inputs
         self.input = StreamInput(self, "input")

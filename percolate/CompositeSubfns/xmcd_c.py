@@ -55,17 +55,17 @@ from percolate.Subfunctions.background_subtraction import background_subtraction
 
 
 class Xmcd_c(CompositeFn):
-    def __init__(self, input, output):
+    def __init__(self, parent, input, output):
 
-        super().__init__("XMCD")
+        super().__init__(parent, "XMCD")
 
-        diff = difference()
-        transp = Transpose()
-        bg_xmcd = background_subtraction2()
-        sc = scale()
-        itgr_xmcd = Integrate()
-        q_val = FindValue("q_val")
-        p_val = FindValue("p_val")
+        diff = difference(self)
+        transp = Transpose(self)
+        bg_xmcd = background_subtraction2(self)
+        sc = scale(self)
+        itgr_xmcd = Integrate(self)
+        q_val = FindValue(self, "q_val")
+        p_val = FindValue(self, "p_val")
 
         self.subfns.append(diff)
         self.subfns.append(bg_xmcd)

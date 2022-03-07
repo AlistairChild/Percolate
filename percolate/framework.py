@@ -34,8 +34,8 @@ class Port:
         self.edges = []
 
     def get_path(self):
-    
-        return str(self.fn) +"/"+ str(self.name)
+        return self.fn.get_path() +":"+ str(self.name)
+        # return str(self.fn) +"/"+ str(self.name)
         
         #return_path = self.fn.getpath(self.name)
         #return return_path
@@ -156,7 +156,13 @@ class num_input(InPort):
 
         self.input_stream = input_stream
         self.default = default
+        
+class GridInput(InPort):
+    def __init__(self, fn, name):
 
+        super().__init__(fn, name)
+        
+        self.grid = [[None for x in range(4)] for y in range(20)]
 
 class free_int_input(InPort):
     def __init__(self, fn, name, min, default, max):
@@ -178,8 +184,9 @@ class choice_input(InPort):
 
 
 class Function:
-    def __init__(self, name):
+    def __init__(self, parent, name):
 
+        self.parent = parent
         self.name = name
         self.inputs = []
         self.outputs = []
@@ -202,12 +209,82 @@ class Function:
             for out in self.outputs:
                 out.notice(note)
 
+    def get_path(self):
+        if self.parent:
+            return self.parent.get_path() + "/" + str(self.name)
+        else:
+            return ""
+
+    def resolve_path_to_port(self, path):
+
+        if path[0] == ":":
+
+            for item in self.outputs:
+
+                if item.name == path[1:]:
+
+                    return item
+
+
+            # Weve reached end of function path - look for port
+            #port_name = """"""
+            #search output ports for name
+            #if found return port
+            #else return none
+        else:
+            # Only get here for composite functions
+            return None
+
+class CompositeFn(Function):
+    def __init__(self,parent, name):
+        super().__init__(parent, name)
+        self.name = name
+        self.subfns = []
+        self.edges = []
+
+    def resolve_path_to_port(self, path):
+        
+        # If already reached port then base class can resolve
+        port = super().resolve_path_to_port(path)
+
+        
+        split_path = path.split("/")
+        
+        #split_path = split_path_pre.partition(":")
+        
+        if port:
+            return port
+
+        elif path[0] == "/":
+            
+            for subfn in self.subfns:
+                if len(split_path) == 2:
+                    final_split = split_path[1].split(":")
+                    if subfn.name == final_split[0]:
+                        return subfn.resolve_path_to_port(":" + final_split[1])
+                else:
+                    if subfn.name == split_path[1]:
+                        remove = len(split_path[0]) + len(split_path[1]) +1
+                        rm = path[remove:]
+                        return subfn.resolve_path_to_port(rm)
+            #search child subfns for name
+            #if found return fn
+            #return child.resolve_path(#strip tail of path)
+            #else return none
+        else:
+            return None
+
+    def get_path(self):
+        if self.parent:
+            return self.parent.get_path() + "/" + str(self.name)
+        else:
+            return ""
 
 class Edge:
     """Connect output port to input port"""
 
     def __init__(self, p1, p2):
-
+        
         self.p1 = p1
         self.p2 = p2
 
@@ -227,9 +304,4 @@ class Edge:
         return self.p1.read()
 
 
-class CompositeFn(Function):
-    def __init__(self, name):
-        super().__init__(name)
 
-        self.subfns = []
-        self.edges = []

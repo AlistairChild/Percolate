@@ -56,9 +56,9 @@ class args_normalise:
 
 
 class Normalise(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("Normalise")
+        super().__init__(parent, "Normalise")
 
         # streamed inputs
 

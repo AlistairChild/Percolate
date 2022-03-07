@@ -40,7 +40,7 @@ from percolate.framework import free_int_input
 from percolate.framework import bool_input
 from percolate.framework import choice_input
 from percolate.framework import Function
-
+from percolate.framework import GridInput
 
 # toolKit
 from percolate.toolkit.step2 import step2
@@ -151,46 +151,63 @@ class IdentifyPeaks(Function):
 class args:
     def __init__(self, parent):
 
-        self.number_of_peaks = parent.number_of_peaks.default
-        self.center_of_peaks = parent.center_of_peaks.default
-        self.sigma_of_peaks = parent.sigma_of_peaks.default
-        self.height_of_peaks = parent.height_of_peaks.default
-        self.type_of_peaks = parent.type_of_peaks.default
 
+        self.center_of_peak = []
+        self.sigma_of_peak = []
+        self.height_of_peak = []
+        self.type_of_peak = []
 
 class IdentifyPeaks(Function):
     """TODO: Centre the step function on the peaks energy!"""
 
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("Identify Peaks")
+        super().__init__(parent,"Identify Peaks")
 
         # Input Ports
         self.input_array = StreamInput(self, "input_array")
 
-        self.number_of_peaks = free_int_input(self, "number_of_peaks", 1, 2, 10)
-
-        self.center_of_peaks = int_input(
-            self, "center_of_peaks", self.input_array, 5990
-        )
-        self.sigma_of_peaks = int_input(self, "sigma_of_peaks", self.input_array, 30)
-        self.height_of_peaks = int_input(
-            self, "height_of_peaks", self.input_array, 0.12
-        )
-        self.type_of_peaks = choice_input(
-            self, "GaussianModel", "GaussianModel", ["GaussianModel", "LorentzianModel"]
-        )
-
+        
+        
+        self.peak_params = GridInput(self, "peak_params")
+        
         # output ports
+        self.guide = ArrayOutput(self, "guide", self.read_guide)
         self.fitted_peaks = ArrayOutput(self, "fitted_peaks", self.read_fitted_peaks)
-
+        
 
 
     # evaluate method
     def evaluate(self):
+    
+        self.lines = []
+        
+        self.args = args(self)
+        
+        
+        for i in self.peak_params.grid:
+            if i[0] != None:
+                self.lines.append(float(i[0]))
+            else:
+                pass
+            if all(i):
+            
+                self.args.center_of_peak.append(float(i[0]))
+                self.args.type_of_peak.append(str(i[1]))
+                self.args.height_of_peak.append(float(i[2]))
+                self.args.sigma_of_peak.append(float(i[3]))
+                
+                
 
+                    
+                    
+        #self.lines = None
+        
+        
+        #pass
+        
         # argument cantains peak information in default values (updated from GUI)
-        local_arguments = args(self)
+        #local_arguments = args(self)
 
         # we set up a list with information to givew to Model. Looks like;
         #    {
@@ -198,14 +215,14 @@ class IdentifyPeaks(Function):
         #        'params': {'center': 652, 'height': 82, 'sigma': 60},
         #    },
         fit = []
-        for i in range(self.number_of_peaks.default):
+        for i in range(len(self.args.center_of_peak)):
 
-            model_type = str(self.type_of_peaks.default)
+            model_type = str(self.args.type_of_peak[i])
 
             params = {
-                "center": self.center_of_peaks.default,
-                "height": self.height_of_peaks.default,
-                "sigma": self.sigma_of_peaks.default,
+                "center": self.args.center_of_peak[i],
+                "height": self.args.height_of_peak[i],
+                "sigma": self.args.sigma_of_peak[i],
             }
 
             model_params = {
@@ -215,21 +232,22 @@ class IdentifyPeaks(Function):
 
             fit.append(model_params)
 
-        print(fit)
+        
         fitting_params = fit
         # perform fit (returns a list of arrays of each peak.)
-        self.fitted_energy_scale_calc, self.fitted_peaks_calc = fit_peaks_to_data(
+        self.fitted_energy_scale_calc, self.fitted_peaks_calc, self.components, self.comp_energy, self.label = fit_peaks_to_data(
             energy=self.input_array.read()["data"][0],
             intensity=self.input_array.read()["data"][1],
-            args=local_arguments,
             fitting_params=fit,
         )
+
+        
         # self.fitted_peaks = self.input_array.read()["data"][1]
         # lines representing the peak positions.
+        
+        #self.lines = None
 
-        self.lines = None
-
-    def read_input_array(self):
+    def read_guide(self):
         return {
             "data": [
                 self.input_array.read()["data"][0],
@@ -240,9 +258,21 @@ class IdentifyPeaks(Function):
         }
         # return self.stepfunction_a
 
-    def read_fitted_peaks(self):
+    '''def read_fitted_peaks(self):
         return {
-            "data": [self.fitted_energy_scale_calc, self.fitted_peaks_calc, self.lines],
+            "data": [                
+                self.input_array.read()["data"][0],
+                self.input_array.read()["data"][1], 
+                self.lines],
+                
             "label": self.input_array.read()["label"],
         }
-        # return self.stepfunction_p
+        # return self.stepfunction_p'''
+    def read_fitted_peaks(self):
+        return {
+            "data": [                
+                self.comp_energy,
+                self.components,
+                None,],
+            "label": self.label,
+        }

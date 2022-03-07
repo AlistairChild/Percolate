@@ -43,9 +43,9 @@ from percolate.toolkit.find_array_equivalent import find_array_equivalent
 
 
 class FindValue(Function):
-    def __init__(self, name):
+    def __init__(self,parent, name):
 
-        super().__init__(name)
+        super().__init__(parent,name)
 
         # input ports
         self.inputarray = StreamInput(self, "inputarray")

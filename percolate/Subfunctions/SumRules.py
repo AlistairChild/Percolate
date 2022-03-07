@@ -47,9 +47,9 @@ from percolate.toolkit.find_array_equivalent import find_array_equivalent
 
 
 class SumRules(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("SumRules")
+        super().__init__(parent, "SumRules")
 
         self.p = StreamInput(self, "p")
         self.q = StreamInput(self, "q")
@@ -57,14 +57,14 @@ class SumRules(Function):
 
         self.shell_occupation = num_input(self, "shell_occupation", self.p, 7.51)
 
-        self.ratio = TextOutput(self, r"ratio = \frac{2q} {9p - 6p}", self.read_ratio)
+        self.ratio = TextOutput(self, "2q / (9p - 6p)", self.read_ratio)
         self.orbitalmoment = TextOutput(
             self,
-            "orbital moment \frac{4 q} {3  r} * (10 - n3d) ",
+            "orbital moment  -((4 * q) * (10 - n3d)) / (3 * r) ",
             self.read_orbitalmoment,
         )
         self.spinmoment = TextOutput(
-            self, "spin moment \frac{2q} {9p - 6p}", self.read_spinmoment
+            self, "spin moment -((6 * p - 4 * q) * (10 - n3d)) / r", self.read_spinmoment
         )
 
         

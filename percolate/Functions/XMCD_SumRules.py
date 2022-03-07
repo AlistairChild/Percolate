@@ -72,19 +72,19 @@ class XMCD_SumRules(CompositeFn):
 
     def __init__(self):
 
-        super().__init__("SumRules")
-
+        super().__init__(None, "SumRules")
+        
         # subfunctions used in this function
-        dr = DirReader()
-        p = XMCDStreamParser()
-        bs = background_subtraction()
-        norm = Normalise()
-        step = step_subtraction()
-        sumrules = SumRules()
+        dr = DirReader(self)
+        p = XMCDStreamParser(self)
+        bs = background_subtraction(self)
+        norm = Normalise(self)
+        step = step_subtraction(self)
+        sumrules = SumRules(self)
 
         # composite subfunctions used
-        xmcd_c = Xmcd_c(step, sumrules)
-        xas_c = Xas_c(step, sumrules)
+        xmcd_c = Xmcd_c(self, step, sumrules)
+        xas_c = Xas_c(self, step, sumrules)
 
         # subfns used to fill the Tree control
         self.subfns.append(dr)

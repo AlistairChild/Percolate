@@ -22,54 +22,55 @@ SOFTWARE."""
 import numpy as np
 
 # framework imports
-from framework import Port
-from framework import InPort
-from framework import OutPort
-from framework import StreamOutput
-from framework import TextOutput
-from framework import StreamInput
-from framework import ArrayOutput
-from framework import FilePathInput
-from framework import DirPathInput
-from framework import MuxInput
-from framework import MuxOutput
-from framework import Param_input
-from framework import func_Output
-from framework import int_input
-from framework import bool_input
-from framework import choice_input
-from framework import Function
-from framework import Edge
-from framework import CompositeFn
+from percolate.framework import Port
+from percolate.framework import InPort
+from percolate.framework import OutPort
+from percolate.framework import StreamOutput
+from percolate.framework import TextOutput
+from percolate.framework import StreamInput
+from percolate.framework import ArrayOutput
+from percolate.framework import FilePathInput
+from percolate.framework import DirPathInput
+from percolate.framework import MuxInput
+from percolate.framework import MuxOutput
+from percolate.framework import Param_input
+from percolate.framework import func_Output
+from percolate.framework import int_input
+from percolate.framework import bool_input
+from percolate.framework import choice_input
+from percolate.framework import Function
+from percolate.framework import Edge
+from percolate.framework import CompositeFn
 
 # subfunction imports
-from Subfunctions.DirReader import DirReader
-from Subfunctions.FileReader import FileReader
-from Subfunctions.parser import EXAFSStreamParser
-from Subfunctions.background_subtraction import background_subtraction
-from Subfunctions.background_subtraction import background_subtraction2
-from Subfunctions.Normalise import Normalise
-from Subfunctions.step_subtraction import step_subtraction
-from Subfunctions.XAS import Xas
-from Subfunctions.area import Area
-from Subfunctions.Multiplexer import Multiplexer
-from Subfunctions.difference import difference
-from Subfunctions.Transpose import Transpose
-from Subfunctions.FindValue import FindValue
-from Subfunctions.IdentifyPeaks import IdentifyPeaks
-from Subfunctions.single_step_subtraction import single_step_subtraction
+from percolate.Subfunctions.DirReader import DirReader
+from percolate.Subfunctions.FileReader import FileReader
+from percolate.Subfunctions.parser import EXAFSStreamParser
+from percolate.Subfunctions.background_subtraction import background_subtraction
+from percolate.Subfunctions.background_subtraction import background_subtraction2
+from percolate.Subfunctions.Normalise import Normalise
+from percolate.Subfunctions.step_subtraction import step_subtraction
+from percolate.Subfunctions.XAS import Xas
+from percolate.Subfunctions.area import Area
+from percolate.Subfunctions.Multiplexer import Multiplexer
+from percolate.Subfunctions.difference import difference
+from percolate.Subfunctions.Transpose import Transpose
+from percolate.Subfunctions.FindValue import FindValue
+from percolate.Subfunctions.IdentifyPeaks import IdentifyPeaks
+from percolate.Subfunctions.single_step_subtraction import single_step_subtraction
 
 
 class EXAFS(CompositeFn):
     def __init__(self):
 
-        super().__init__("EXAFS")
+        super().__init__(None, "EXAFS")
 
-        fr = FileReader()
-        exp = EXAFSStreamParser()
-        bs = background_subtraction2()
-        ss = single_step_subtraction()
-        ipeaks = IdentifyPeaks()
+        fr = FileReader(self)
+        exp = EXAFSStreamParser(self)
+        bs = background_subtraction2(self)
+        ss = single_step_subtraction(self)
+        ipeaks = IdentifyPeaks(self)
+
         self.subfns.append(fr)
         self.subfns.append(exp)
         self.subfns.append(bs)

@@ -61,9 +61,9 @@ class args_step:
 class step_subtraction(Function):
     """TODO: Centre the step function on the peaks energy!"""
 
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("step_subtraction")
+        super().__init__(parent, "step_subtraction")
 
         # Input Ports
         self.a_p_norm = StreamInput(self, "a_p_norm")

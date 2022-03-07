@@ -48,9 +48,9 @@ from percolate.toolkit.check_values_in_range import check_values_in_range
 
 
 class Integrate(Function):
-    def __init__(self):
+    def __init__(self,parent):
 
-        super().__init__("integrate")
+        super().__init__(parent,"integrate")
 
         # input ports
         self.input = StreamInput(self, "inputarray")

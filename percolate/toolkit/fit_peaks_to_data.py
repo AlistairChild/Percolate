@@ -37,6 +37,7 @@ from lmfit import models
 from lmfit import minimize, Parameters
 
 from scipy import optimize, signal
+from percolate.toolkit.make_zero_array import make_zero_array
 
 
 def gaussian_cdf(x, amp, mu, sigma):
@@ -54,94 +55,109 @@ def lorentzian_cdf(x, amp, mu, sigma):
 fitted = []
 
 
-def fit_peaks_to_data(energy, intensity, args, fitting_params):
-
-    # number of peaks
-    n_peaks = args.number_of_peaks
-
-    # energy of peaks
-    e_peaks = args.center_of_peaks
-
-    # width of peaks
-    w_peaks = args.sigma_of_peaks
-
-    # intensity of peaks
-    i_peaks = args.height_of_peaks
-
-    # name of peaks
-    id_peaks = args.type_of_peaks
-
-    # create spec with fitting_params dynamical
-    spec = {"x": energy, "y": intensity, "model": fitting_params}
-
-    def generate_model(spec):
-        composite_model = None
-        params = None
-        x = spec["x"]
-        y = spec["y"]
-        x_min = np.min(x)
-        x_max = np.max(x)
-
-        x_range = x_max - x_min
-
-        y_max = np.max(y)
-
-        for i, basis_func in enumerate(spec["model"]):
-            prefix = f"m{i}_"
-            model = getattr(models, basis_func["type"])(prefix=prefix)
-            if basis_func["type"] in [
-                "GaussianModel",
-                "LorentzianModel",
-                "VoigtModel",
-            ]:  # for now VoigtModel has gamma constrained to sigma
-                model.set_param_hint("sigma", min=1e-6, max=x_range)
-                model.set_param_hint("center", min=x_min, max=x_max)
-                model.set_param_hint("height", min=1e-6, max=1.1 * y_max)
-                model.set_param_hint("amplitude", min=1e-6)
-                # default guess is horrible!! do not use guess()
-                default_params = {
-                    prefix + "center": x_min + x_range * random.random(),
-                    prefix + "height": y_max * random.random(),
-                    prefix + "sigma": x_range * random.random(),
-                }
-            else:
-                raise NotImplemented(f'model {basis_func["type"]} not implemented yet')
-            if "help" in basis_func:  # allow override of settings in parameter
-                for param, options in basis_func["help"].items():
-                    model.set_param_hint(param, **options)
-            model_params = model.make_params(
-                **default_params, **basis_func.get("params", {})
-            )
-            if params is None:
-                params = model_params
-
-            else:
-                params.update(model_params)
-
-            if composite_model is None:
+def fit_peaks_to_data(energy, intensity, fitting_params):
+    if fitting_params:
+        # number of peaks
+        '''n_peaks = args.number_of_peaks
+    
+        # energy of peaks
+        e_peaks = args.center_of_peaks
+    
+        # width of peaks
+        w_peaks = args.sigma_of_peaks
+    
+        # intensity of peaks
+        i_peaks = args.height_of_peaks
+    
+        # name of peaks
+        id_peaks = args.type_of_peaks'''
+    
+        # create spec with fitting_params dynamical
+        spec = {"x": energy, "y": intensity, "model": fitting_params}
+        
+    
+        def generate_model(spec):
+            composite_model = None
+            params = None
+            x = spec["x"]
+            y = spec["y"]
+            x_min = np.min(x)
+            x_max = np.max(x)
+    
+            x_range = x_max - x_min
+    
+            y_max = np.max(y)
+    
+            for i, basis_func in enumerate(spec["model"]):
+                prefix = f"m{i}_"
+                model = getattr(models, basis_func["type"])(prefix=prefix)
+                if basis_func["type"] in [
+                    "GaussianModel",
+                    "LorentzianModel",
+                    "VoigtModel",
+                ]:  # for now VoigtModel has gamma constrained to sigma
+                    model.set_param_hint("sigma", min=1e-6, max=x_range)
+                    model.set_param_hint("center", min=x_min, max=x_max)
+                    model.set_param_hint("height", min=1e-6, max=1.1 * y_max)
+                    model.set_param_hint("amplitude", min=1e-6)
+                    # default guess is horrible!! do not use guess()
+                    default_params = {
+                        prefix + "center": x_min + x_range * random.random(),
+                        prefix + "height": y_max * random.random(),
+                        prefix + "sigma": x_range * random.random(),
+                    }
+                else:
+                    raise NotImplemented(f'model {basis_func["type"]} not implemented yet')
+                if "help" in basis_func:  # allow override of settings in parameter
+                    for param, options in basis_func["help"].items():
+                        model.set_param_hint(param, **options)
+                model_params = model.make_params(
+                    **default_params, **basis_func.get("params", {})
+                )
+                if params is None:
+                    params = model_params
+    
+                else:
+                    params.update(model_params)
+    
+                if composite_model is None:
+                
+                    composite_model = model
+    
+                else:
+                    composite_model = composite_model + model
+    
+            return composite_model, params, model
+    
+        composite_model, params, model  = generate_model(spec)
+        output = composite_model.fit(spec["y"], params, x=spec["x"])
+    
+        # evaluate components of output
+        comps = output.eval_components()
+    
+        components = []
+        components_energy = []
+        name =[]
+    
+        for i in comps:
+            # print(i)
             
-                composite_model = model
+            
+            components.append(comps[f"{i}"])
+            components_energy.append(energy)
+            name.append(str(i))
 
-            else:
-                composite_model = composite_model + model
-
-        return composite_model, params, model
-
-    composite_model, params, model  = generate_model(spec)
-    output = composite_model.fit(spec["y"], params, x=spec["x"])
-
-    # evaluate components of output
-    comps = output.eval_components()
-
-    components = []
-    components_energy = []
-
-    for i in comps:
-        # print(i)
-
-        components.append(list(comps[f"{i}"]))
+        #print()
+        name.append("envolope")
+        components.append(output.best_fit)
         components_energy.append(energy)
+        
+        
+        components = np.array(components)
+        components_energy = np.array(components_energy)
 
-    return energy, output.best_fit
-    # return components_energy, components
-
+        
+        return energy, output.best_fit, components, components_energy, name
+        # return components_energy, components
+    else:
+        return energy, make_zero_array(intensity), make_zero_array(intensity), energy, ["fit"]

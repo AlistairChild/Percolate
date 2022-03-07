@@ -45,39 +45,52 @@ from percolate.toolkit.step2 import step2
 from percolate.toolkit.single_step import single_step
 
 
+
 class args_step:
     def __init__(self, parent):
 
-        self.step_start = parent.step_start.default
-        self.step_stop = parent.step_stop.default
         self.apply_step = parent.apply_step.default
         self.fit_function = parent.fit_function.default
-        self.edge = parent.edge.default
+
+        self.pre_feature_min = parent.pre_feature_min.default
+        self.pre_feature_max = parent.pre_feature_max.default
+        self.post_feature_min = parent.post_feature_min.default
+        self.post_feature_max = parent.post_feature_max.default
 
 
-class single_step_xanes(Function):
+class single_step_subtraction_xanes(Function):
     """TODO: Centre the step function on the peaks energy!"""
 
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("step_subtraction")
+        super().__init__(parent, "step_subtraction")
 
         # Input Ports
         self.input_array = StreamInput(self, "input_array")
 
-        self.apply_step = choice_input(self, "Apply", "on", ["on", "off"])
+        self.apply_step = choice_input(self, "Apply", "off", ["off", "on"])
         self.fit_function = choice_input(
             self, "fit_function", "Voight", ["Voight", "Arctan"]
         )
-        self.step_start = int_input(self, "step_start", self.input_array, 5982)
-        self.step_stop = int_input(self, "step_stop", self.input_array, 6006)
-        self.edge = int_input(self, "edge", self.input_array, 6010)
+        self.pre_feature_min = int_input(
+            self, "pre_feature_min", self.input_array, None
+        )
+        self.pre_feature_max = int_input(
+            self, "pre_feature_max", self.input_array, None
+        )
+        self.post_feature_min = int_input(
+            self, "post_feature_min", self.input_array, None
+        )
+        self.post_feature_max = int_input(
+            self, "post_feature_max", self.input_array, None
+        )
 
         # output ports
         self.stepfunction = ArrayOutput(self, "stepfunction", self.read_stepfunction)
         self.subtracted_step = ArrayOutput(
-            self, "post_step_a", self.read_subtracted_step
+            self, "subtracted_step", self.read_subtracted_step
         )
+
 
 
 
@@ -86,28 +99,53 @@ class single_step_xanes(Function):
 
         local_arguments = args_step(self)
 
-        self.stepfunction, self.subtracted_step = single_step_xanes(
-            energy=self.input_array.read()["data"][0],
-            absorption=self.input_array.read()["data"][1],
-            args=local_arguments,
-        )
+        x = self.input_array.read()["data"][0]
+        y = self.input_array.read()["data"][1]
+        pre_feature_min = local_arguments.pre_feature_min
+        pre_feature_max = local_arguments.pre_feature_max
+        post_feature_min = local_arguments.post_feature_min
+        post_feature_max = local_arguments.post_feature_max
 
-        self.lines = [self.step_start.default, self.step_stop.default]
+        if local_arguments.apply_step == "off":
+
+            x = x
+            background = make_zero_array(x)
+            y = y - background
+
+        else:
+            x, y, background = pre_edge_fit(
+                x,
+                y,
+                pre_feature_min,
+                pre_feature_max,
+                post_feature_min,
+                post_feature_max,
+            )
+
+        self.x = x
+        self.y = y
+        self.background = background
+
+        self.lines = [
+            pre_feature_min,
+            pre_feature_max,
+            post_feature_min,
+            post_feature_max,
+        ]
 
     def read_stepfunction(self):
         return {
-            "data": [self.input_array.read()["data"][0], self.stepfunction, self.lines],
+            "data": [self.x, self.background, self.lines],
             "label": self.input_array.read()["label"],
         }
         # return self.stepfunction_a
 
     def read_subtracted_step(self):
         return {
-            "data": [
-                self.input_array.read()["data"][0],
-                self.subtracted_step,
-                self.lines,
-            ],
+            "data": [self.x, self.y, self.lines],
             "label": self.input_array.read()["label"],
         }
         # return self.post_step_p
+
+    def calculate_fit(self, x, y, argument):
+        pass

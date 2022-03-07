@@ -57,9 +57,9 @@ class args_xas:
 
 
 class Xas(Function):
-    def __init__(self):
+    def __init__(self,parent):
 
-        super().__init__("XAS spectra")
+        super().__init__(parent, "XAS spectra")
 
         # inputs
 

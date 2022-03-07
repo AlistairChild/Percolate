@@ -46,9 +46,9 @@ class SinGen(Function):
     This create a sin function where the user can alter the frequency and amplitude
     """
 
-    def __init__(self):
+    def __init__(self, parent=None):
 
-        super().__init__("SinGen")
+        super().__init__(parent,"SinGen")
         
         # ports
         self.frequency = free_int_input(self, "frequency", 100, 200, 500)
@@ -58,11 +58,11 @@ class SinGen(Function):
         self.sin = ArrayOutput(self, "sin", self.read_sin)
         
 
-    def getpath(self, name):
+    # def getpath(self, name):
 
-        return_path = str(self) + "/" + str(name)
+    #     return_path = str(self) + "/" + str(name)
 
-        return return_path
+    #     return return_path
 
     def evaluate(self):
 

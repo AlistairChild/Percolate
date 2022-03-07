@@ -41,11 +41,13 @@ from percolate.framework import Edge
 from percolate.framework import CompositeFn
 
 
+from percolate.Subfunctions.Addition import addition
 from percolate.Subfunctions.DirReader import DirReader
 from percolate.Subfunctions.FileReader import FileReader
 from percolate.Subfunctions.parser import XMCDStreamParser
 from percolate.Subfunctions.parser import SimpleParser
 from percolate.Subfunctions.background_subtraction import background_subtraction2
+from percolate.Subfunctions.background_subtraction import background_subtraction
 from percolate.Subfunctions.Normalise import Normalise
 from percolate.Subfunctions.step_subtraction import step_subtraction
 from percolate.Subfunctions.single_step_subtraction_xanes import (
@@ -59,9 +61,9 @@ from percolate.Subfunctions.IdentifyPeaks import IdentifyPeaks
 class pre_peak_subtraction(CompositeFn):
     def __init__(self):
 
-        super().__init__("pre_peak_subtraction")
+        super().__init__(None, "pre_peak_subtraction")
 
-        # Subfunctions used
+        '''# Subfunctions used
         fr = FileReader()
         p = SimpleParser()
         bs = background_subtraction2()
@@ -82,7 +84,38 @@ class pre_peak_subtraction(CompositeFn):
 
         self.edges.append(Edge(bs.subtracted_background, step.input_array))
 
-        self.edges.append(Edge(step.subtracted_step, peak_id.input_array))
+        self.edges.append(Edge(step.subtracted_step, peak_id.input_array))'''
+        
+        
+        # Subfunctions used
+        dr = DirReader(self)
+        p = XMCDStreamParser(self)
+        bs = background_subtraction(self)
+        step = step_subtraction(self)
+        ad = addition(self)
+        peak_id = IdentifyPeaks(self)
+
+        # subfns
+        self.subfns.append(dr)
+        self.subfns.append(p)
+        self.subfns.append(bs)
+        self.subfns.append(step)
+        self.subfns.append(ad)
+        self.subfns.append(peak_id)
+
+        # edges
+        self.edges.append(Edge(dr.dir_contents, p.input))
+
+        self.edges.append(Edge(p.t_a_all, bs.t_a_all))
+        self.edges.append(Edge(p.t_p_all, bs.t_p_all))
+
+        self.edges.append(Edge(bs.a_p_background_subtracted, step.a_p_norm))
+        self.edges.append(Edge(bs.a_a_background_subtracted, step.a_a_norm))
+
+        self.edges.append(Edge(step.a_a_step_subtracted, ad.A))
+        self.edges.append(Edge(step.a_p_step_subtracted, ad.B))
+        
+        self.edges.append(Edge(ad.added, peak_id.input_array))
 
 
 function = pre_peak_subtraction()

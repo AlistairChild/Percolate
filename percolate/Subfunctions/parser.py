@@ -57,9 +57,9 @@ class args_parser:
 
 
 class EXAFSStreamParser(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("EXAFSStreamParser")
+        super().__init__(parent, "EXAFSStreamParser")
 
         # input ports
         self.input = StreamInput(self, "in")
@@ -137,9 +137,9 @@ class EXAFSStreamParser(Function):
 
 
 class XMCDStreamParser(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("XMCDStreamParser")
+        super().__init__(parent, "XMCDStreamParser")
 
         # input ports
         self.input = StreamInput(self, "in")
@@ -164,7 +164,7 @@ class XMCDStreamParser(Function):
         self.t_a_all_data = None
         self.t_p_all_data = None
         self.e_data = None
-        self.parent = Function
+        #self.parent = Function
 
     '''def getpath(self, name):
         # pass instance of class as path
@@ -278,9 +278,9 @@ class XMCDStreamParser(Function):
 
 
 class SimpleParser(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("SimpleParser")
+        super().__init__(parent,"SimpleParser")
 
         # input ports
         self.input = StreamInput(self, "in")

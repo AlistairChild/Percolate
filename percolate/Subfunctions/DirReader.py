@@ -48,8 +48,8 @@ from percolate.toolkit.find_files2 import find_files2
 class DirReader(Function):
     """Given a file path"""
 
-    def __init__(self):
-        super().__init__("DirReader")
+    def __init__(self, parent):
+        super().__init__(parent, "DirReader")
 
         # create ports
         self.dir_path = DirPathInput(self, "in")

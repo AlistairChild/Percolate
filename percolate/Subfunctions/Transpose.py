@@ -54,9 +54,9 @@ class args_transpose:
 
 
 class Transpose(Function):
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__("Transpose")
+        super().__init__(parent, "Transpose")
 
         # streamed inputs
 

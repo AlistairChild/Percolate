@@ -243,8 +243,8 @@ def step3(x, y, start, mid, end, function, fittype):
 
         # el3_cut = len(energy[int(l3_peak-l3_fwhm):int(l3_peak+l3_fwhm)])
         # el2_cut = len(energy[int(l2_peak-l2_fwhm):int(l2_peak+l2_fwhm)])
-        el3_cut = len(x[int(L3_peak_pos - 3) : int(L3_peak_pos + 3)])
-        el2_cut = len(x[int(L2_peak_pos - 3) : int(L2_peak_pos + 3)])
+        el3_cut = len(x[int(L3_peak_pos - 10) : int(L3_peak_pos + 10)])
+        el2_cut = len(x[int(L2_peak_pos - 10) : int(L2_peak_pos + 10)])
         # create a linspace of equal length.
         xl3 = np.linspace(0, 1, el3_cut)
         xl2 = np.linspace(0, 1, el2_cut)

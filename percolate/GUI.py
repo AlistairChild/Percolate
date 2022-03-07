@@ -26,6 +26,7 @@ import sys
 import os
 import argparse
 import re
+import csv
 import wx.lib.agw.aui.tabmdi
 from os import walk
 import importlib
@@ -816,7 +817,7 @@ class FigureStack(OutputControlBase):
         y = np.array(name.read()["data"][1])
         lbl = list(name.read()["label"])
 
-        number_of_colors = 12
+        number_of_colors = 24
 
         colors = [
             "#" + "".join([random.choice("0123456789ABCDEF") for j in range(6)])

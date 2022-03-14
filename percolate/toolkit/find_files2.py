@@ -20,7 +20,7 @@ SOFTWARE."""
 import os
 from percolate.toolkit.parse_xmcd_data_file import parse_xmcd_data_file
 
-
+#return a list of all files selected
 def find_files2(data_path):
 
     files = []

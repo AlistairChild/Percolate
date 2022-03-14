@@ -115,7 +115,8 @@ from matplotlib.backends.backend_wxagg import (
     NavigationToolbar2WxAgg as NavigationToolbar,
 )
 from matplotlib.figure import Figure
-
+from matplotlib.lines import Line2D
+from matplotlib import pyplot as plt, animation
 import numpy as np
 import matplotlib.pyplot as pl
 import math
@@ -322,7 +323,9 @@ class MyDropTarget(wx.TextDropTarget):
         #port = self.app.lookup_port(data)
 
         port = self.app.lookup_port(data)
+        print(port.name)
         
+        print(port.read().get("label"))
         self.parent.DisplayData(port)
         self.parent.DisplayPorts(port)
 
@@ -335,9 +338,14 @@ class MaxPlotControl(OutputControlBase):
 
         # dictionary for plots
         self._dict = {}
-
+        self.xcoord = None
+        self.ycoord = None
         # parent is the main frame
         self.panel = wx.Panel(app.main_frame)
+        self.panel.menubar = wx.MenuBar()
+
+        #fetch funcitons from Function directory
+        self.panel.functionMenu = wx.Menu()
 
         self.datarequest = wx.CheckBox(self.panel, label="Show data points")
         self.linerequest = wx.CheckBox(self.panel, label="Show line")
@@ -364,10 +372,14 @@ class MaxPlotControl(OutputControlBase):
         fgs = wx.FlexGridSizer(4, 1, 10, 10)
 
         self.panel.fig = Figure((5, 3), 75)
-        self.panel.fig.canvas = FigureCanvas(self.panel, 1, self.panel.fig)
+        self.a = self.panel.fig.add_subplot(111)
+        self.a.grid(False)
+        self.coord = self.panel.fig.text(0.13,0.12, 'x:%1.4s, y:%1.4s'%(self.xcoord , self.ycoord))
+        self.animation = animation.ArtistAnimation(self.panel.fig, [(self.coord,)])
+        self.panel.fig.canvas = FigureCanvas(self.panel, -1, self.panel.fig)
         self.panel.toolbar = NavigationToolbar(self.panel.fig.canvas)  # matplotlib toolbar
         self.panel.toolbar.Realize()
-
+        
         self.items_in_plot = wx.CheckListBox(
             self.panel, name="Ports Displayed", choices=[]
         )
@@ -412,15 +424,17 @@ class MaxPlotControl(OutputControlBase):
         self.guidelines = True
 
         self.selected_ports = []
-        
+        self.panel.fig.canvas.draw()
+
     def mouse_move(self, evt):
     
-        x, y = evt.xdata, evt.ydata
-        #self.a.format_coords = 'x:%1.4f, y:%1.4f'%(x , y)
-        #self.panel.fig.canvas.draw()
-        #self.panel.toolbar.update()
-        #print(x, y)
-        #self.a.text('x:%1.4s, y:%1.4s'%(x , y))
+        self.xcoord, self.ycoord = evt.xdata, evt.ydata
+
+        self.coord.set_text('x:%1.4s, y:%1.4s'%(self.xcoord , self.ycoord))
+
+        self.panel.fig.canvas.draw()
+
+
     def on_port_select(self, evt):
 
         self.ports = []
@@ -494,24 +508,7 @@ class MaxPlotControl(OutputControlBase):
         
         
         # clear figure
-        self.panel.fig.clear()
-
-        # add subplot
-        self.a = self.panel.fig.add_subplot(111)
-        self.a.grid(False)
-        
-        
-        def format_coord(x, y):
-            col = int(x+0.5)
-            row = int(y+0.5)
-            if col>=0 and col<numcols and row>=0 and row<numrows:
-                z = X[row,col]
-                return 'x=%1.4f, y=%1.4f, z=%1.4f'%(x, y, z)
-            else:
-                return 'x=%1.4f, y=%1.4f'%(x, y)
-        
-        # create color dictionary
-
+        self.a.clear()
 
         # we need to accompany multiple different ports
         count = 0
@@ -546,7 +543,7 @@ class MaxPlotControl(OutputControlBase):
                     if len(x) != len(y):
                         y = "".join(y)
                         self.panel.lines = self.a.plot(
-                            x_data, y_data, color=colors[count], label = y
+                            x_data, y_data, color=colors[count], label = y, picker=2
                         )
                     else:
                         if self.datapoints and self.drawline:
@@ -555,10 +552,11 @@ class MaxPlotControl(OutputControlBase):
                                 y_data,
                                 linestyle = linestyle[count%(len(linestyle))][1],
                                 color=colors[count],
-                                label = label + " - " + str(port.name),
+                                label = port.name + "/" + label,
+                                picker=2
                             )
                             self.a.scatter(
-                                x_data, y_data, marker=markers[count%(len(markers))], color="black", s=15, label = label + " - " + str(port.name)
+                                x_data, y_data, marker=markers[count%(len(markers))], color="black", s=15, label = port.name + "/" + label
                             )
 
                         elif self.drawline:
@@ -567,12 +565,13 @@ class MaxPlotControl(OutputControlBase):
                                 y_data,
                                 linestyle = linestyle[count%(len(linestyle))][1],
                                 color=colors[count],
-                                label=label + " - " + str(port.name),
+                                label=port.name + "/" + label,
+                                picker=2
                             )
 
                         elif self.datapoints:
                             self.a.scatter(
-                                x_data, y_data, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = label + " - " + str(port.name)
+                                x_data, y_data, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = port.name + "/" + label
                             )
 
                         else:
@@ -591,7 +590,7 @@ class MaxPlotControl(OutputControlBase):
                         self.a.legend()
 
             else:
-                self.a.format_coords = format_coord
+                #self.a.format_coords = format_coord
 
                 try:
 
@@ -626,8 +625,14 @@ class MaxPlotControl(OutputControlBase):
                     self.a.legend()
                     
         
+        
+        
         self.panel.fig.canvas.draw()
         self.panel.toolbar.update()
+
+
+            
+
 
 class MinimalPlotControl(OutputControlBase):
     """Represents a vector output in one line
@@ -1306,18 +1311,6 @@ class CtrlFrame(wx.Frame):
         
     
         self.Show()
-
-
-class DropTarget(wx.DropTarget):
-    def __init__(self, window):
-
-        wx.DropTarget.__init__(self)
-        self.window = window
-
-    def OnDropFile(self, x, y, data):
-
-        # drop the port into window
-        self.window.DisplayData(data)
 
 
 class MyApp(wx.App):

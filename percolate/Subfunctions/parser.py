@@ -190,8 +190,8 @@ class XMCDStreamParser(Function):
             samples = parse_xmcd_data_file(data)
 
             # Sanity checks
-            angle = [sample.angle for sample in samples]
-            ioes = [sample.ioes for sample in samples]
+            #angle = [sample.angle for sample in samples]
+            #ioes = [sample.ioes for sample in samples]
 
             # change
             if len(samples) % 2:

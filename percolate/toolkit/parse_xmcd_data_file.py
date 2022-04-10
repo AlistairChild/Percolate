@@ -46,12 +46,14 @@ class xmcdSample:
 
 
 def parse_xmcd_data_file(file_path):
-    
-    #files look like
+    "Parse XMCD Samples from file.If the data file/column format changes accomodate that in here."
+
+    #Sample record headers look like:-
     #Time of Day	Time (s)	Z	Magnet Field	Energy	Beam Current	I0 ES	EY	Counter 2	LY	Clock
     COL_TITLE_RE = "Time of Day"
     COL_TITLE_RE = re.compile(COL_TITLE_RE) 
 
+    #dictionary to contain the column numbers of column headers
     listofcolumns = {
         "Magnet Field":0,
         "Energy": 0,
@@ -61,18 +63,11 @@ def parse_xmcd_data_file(file_path):
         "Clock" :  0
     }
 
-    "Parse XMCD Samples from file.If the data file/column format changes accomodate that in here."
-    # print(file_path)
     # Sample record lines look like:-
     #    15:52:51 97.76799774 -1.79999995 66.20078278 750.09997559 500.39013672	...
-    #
-    # Matching the time stamp pattern at start of the data lines seems adequate:
+
     DATA_RE = "^\d\d:\d\d:\d\d\s+"
     DATA_CRE = re.compile(DATA_RE)  # Pre-compile the pattern for greater speed
-
-    # List of column indices corresponding to required properties:
-    #    (time, mag, e, ioes, ey, clock, theta, z)
-    
 
     # Open file and examine line by line
     data_file = file_path.split("\n")
@@ -82,17 +77,14 @@ def parse_xmcd_data_file(file_path):
         # Only process valid looking data lines
         if COL_TITLE_RE.match(line):
             
-            # Split the white-space separated text values into an array.
+            # Split the tab separated column headers into an array.
             vals = line.split("\t")
             
-
-
-
+            #update listofcolumns dictionary with the position of column headers in current file
             for item in range(len(vals)):
-                
                 for j in listofcolumns.keys():
+                    #take the first of all values 
                     if vals[item] == j and listofcolumns[j] == 0:
-                        
                         listofcolumns[j] = item
 
         if DATA_CRE.match(line):
@@ -100,9 +92,6 @@ def parse_xmcd_data_file(file_path):
             # Split the white-space separated text values into an array.
             vals = line.split()
 
-            # print("cow")
-            # for col in listofcolumns.values():
-            #     print(col)
             # Select values from the columns that we want
             # and convert from text to float at same time.
             props = [float(vals[col]) for col in listofcolumns.values()]
@@ -114,152 +103,3 @@ def parse_xmcd_data_file(file_path):
 
 
     return samples
-# def parse_data_file(file_path):
-
-
-# class xmcdSample:
-#     # Represent a single XMCD sample point.Only those properties relevant to the analysis are represented.
-#     def __init__(self, time, mag, e, ioes, ey, clock, angle, z_value):
-
-#         self.time = time
-#         self.mag = mag
-#         self.e = e
-#         self.ioes = ioes
-#         self.ey = ey
-#         self.clock = clock
-#         self.angle = angle
-#         self.z_value = z_value
-
-#     @property
-#     def transmission(self):
-#         # print(self.clock)
-#         # return self.ey/ (self.ioes-self.clock)
-
-#         return self.ey / self.clock
-
-#     def z_value(self):
-#         pass
-
-
-# def parse_xmcd_data_file(file_path):
-#     "Parse XMCD Samples from file.If the data file/column format changes accomodate that in here."
-#     # print(file_path)
-#     # Sample record lines look like:-
-#     #    15:52:51 97.76799774 -1.79999995 66.20078278 750.09997559 500.39013672	...
-#     #
-#     # Matching the time stamp pattern at start of the data lines seems adequate:
-#     DATA_RE = "^\d\d:\d\d:\d\d\s+"
-#     DATA_CRE = re.compile(DATA_RE)  # Pre-compile the pattern for greater speed
-
-#     # List of column indices corresponding to required properties:
-#     #    (time, mag, e, ioes, ey, clock, theta, z)
-#     SELECT_COLS = (1, 2, 4, 6, 7, 10, 19, 2)
-
-#     # Open file and examine line by line
-#     data_file = file_path.split("\n")
-#     samples = []
-#     for line in data_file:
-
-#         # Only process valid looking data lines
-#         if DATA_CRE.match(line):
-
-#             # Split the white-space separated text values into an array.
-#             vals = line.split()
-
-#             # Select values from the columns that we want
-#             # and convert from text to float at same time.
-#             props = [float(vals[col]) for col in SELECT_COLS]
-
-#             # Construct XMCD Sample object from selected values.
-#             # This assumes COLS are listed in order required by
-#             # the Sample constructor.
-#             samples.append(xmcdSample(*props))
-
-#     return samples
-
-
-"""class Sample():
-
-    #Properties to be selected from file.
-    
-    def __init__(self, energy, intensity):
-    
-        self.energy = energy
-        
-        self.intensity = intensity
-        
-
-    
-    
-    
-    
-   
-def parse_data_file(data):
-    'Parse EXAFS Samples from file. If the data file/column format changes accomodate that in here.'
-    
-    pattern_seen = None   
-    # Sample record lines look like:-
-    #    1086.33 280
-    
-    # Matching the time stamp pattern at start of the data lines seems adequate:
-    DATA_RE = "#Acquired="
-    DATA_CRE = re.compile(DATA_RE) 	# Pre-compile the pattern for greater speed
-
-    # List of column indices corresponding to required properties:
-    #    (time, mag, e, ioes, ey, clock, theta, z)
-    SELECT_COLS = (0, 1)
-    
-    # Open file and examine line by line
-    #data_file = file_path.split('\n')
-    
-    samples = []
-    
-    #f = open(file_path,"r")
-    #lines = f.readlines()
-    
-
-
-	#for x in lines:
-	#	transmission.append(float(x.split( )[1]))
-	#	energy.append(float(x.split( )[0]))
-	#	f.close()
-
-    
-    
-    data_file = data.split('\n')
-    
-    # Only process valid looking data lines
-    for line in data_file:
-
-        
-        if pattern_seen ==True:
-            print(line)
-        
-        # Split the white-space separated text values into an array.
-        
-        
-            vals = line.split('\t')
-    
-        # Select values from the columns that we want 
-        # and convert from text to float at same time.
-        
-            
-            props = [float(vals[col]) for col in SELECT_COLS]
-    
-        
-        
-        # Construct XMCD Sample object from selected values.
-        # This assumes COLS are listed in order required by 
-        # the Sample constructor.
-       
-       
-            samples.append(Sample(*props))
-            
-            
-        if DATA_CRE.match(line):
-            print("data seen")
-            pattern_seen = True
-            
-            
-
-    return samples"""

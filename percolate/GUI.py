@@ -109,6 +109,7 @@ from percolate.framework import GridInput
 # matplotlib (Plotting)
 import matplotlib
 import matplotlib.cm as cm
+import matplotlib.colors
 import matplotlib.cbook as cbook
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import (
@@ -158,86 +159,89 @@ markers = [
     "d",
 
 ]
+colors = ['#377eb8', '#ff7f00', '#4daf4a',
+                  '#f781bf', '#a65628', '#984ea3',
+                  '#999999', '#e41a1c', '#dede00']
 
-colors = [
-    "blue",
-    "black",
-    "brown",
-    "red",
-    "green",
-    "orange",
-    "turquoise",
-    "pink",
-    "blue",
-    "black",
-    "red",
-    "green",
-    "orange",
-    "pink",
-    "purple",
-    "black",
-    "red",
-    "blue",
-    "blue",
-    "black",
-    "brown",
-    "red",
-    "yellow",
-    "green",
-    "orange",
-    "blue",
-    "black",
-    "brown",
-    "red",
-    "yellow",
-    "green",
-    "orange",
-    "turquoise",
-    "pink",
-    "blue",
-    "black",
-    "red",
-    "green",
-    "orange",
-    "pink",
-    "purple",
-    "black",
-    "red",
-    "blue",
-    "blue",
-    "black",
-    "brown",
-    "red",
-    "yellow",
-    "green",
-    "orange",
-    "blue",
-    "black",
-    "brown",
-    "red",
-    "yellow",
-    "green",
-    "orange",
-    "turquoise",
-    "pink",
-    "blue",
-    "black",
-    "red",
-    "green",
-    "orange",
-    "pink",
-    "purple",
-    "black",
-    "red",
-    "blue",
-    "blue",
-    "black",
-    "brown",
-    "red",
-    "yellow",
-    "green",
-    "orange",
-]
+# colors = [
+#     "blue",
+#     "black",
+#     "brown",
+#     "red",
+#     "green",
+#     "orange",
+#     "turquoise",
+#     "pink",
+#     "blue",
+#     "black",
+#     "red",
+#     "green",
+#     "orange",
+#     "pink",
+#     "purple",
+#     "black",
+#     "red",
+#     "blue",
+#     "blue",
+#     "black",
+#     "brown",
+#     "red",
+#     "yellow",
+#     "green",
+#     "orange",
+#     "blue",
+#     "black",
+#     "brown",
+#     "red",
+#     "yellow",
+#     "green",
+#     "orange",
+#     "turquoise",
+#     "pink",
+#     "blue",
+#     "black",
+#     "red",
+#     "green",
+#     "orange",
+#     "pink",
+#     "purple",
+#     "black",
+#     "red",
+#     "blue",
+#     "blue",
+#     "black",
+#     "brown",
+#     "red",
+#     "yellow",
+#     "green",
+#     "orange",
+#     "blue",
+#     "black",
+#     "brown",
+#     "red",
+#     "yellow",
+#     "green",
+#     "orange",
+#     "turquoise",
+#     "pink",
+#     "blue",
+#     "black",
+#     "red",
+#     "green",
+#     "orange",
+#     "pink",
+#     "purple",
+#     "black",
+#     "red",
+#     "blue",
+#     "blue",
+#     "black",
+#     "brown",
+#     "red",
+#     "yellow",
+#     "green",
+#     "orange",
+# ]
 
 def exists_in_list(list, item):
 
@@ -543,7 +547,7 @@ class MaxPlotControl(OutputControlBase):
                     if len(x) != len(y):
                         y = "".join(y)
                         self.panel.lines = self.a.plot(
-                            x_data, y_data, color=colors[count], label = y, picker=2
+                            x_data, y_data, color=colors[count%len(colors)], label = y, picker=2
                         )
                     else:
                         if self.datapoints and self.drawline:
@@ -551,12 +555,12 @@ class MaxPlotControl(OutputControlBase):
                                 x_data,
                                 y_data,
                                 linestyle = linestyle[count%(len(linestyle))][1],
-                                color=colors[count],
+                                color=colors[count%len(colors)],
                                 label = port.name + "/" + label,
                                 picker=2
                             )
                             self.a.scatter(
-                                x_data, y_data, marker=markers[count%(len(markers))], color="black", s=15, label = port.name + "/" + label
+                                x_data, y_data, marker=markers[count%(len(markers))], color =colors[count%len(colors)], s=15, label = port.name + "/" + label
                             )
 
                         elif self.drawline:
@@ -564,14 +568,14 @@ class MaxPlotControl(OutputControlBase):
                                 x_data,
                                 y_data,
                                 linestyle = linestyle[count%(len(linestyle))][1],
-                                color=colors[count],
+                                color=colors[count%len(colors)],
                                 label=port.name + "/" + label,
                                 picker=2
                             )
 
                         elif self.datapoints:
                             self.a.scatter(
-                                x_data, y_data, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = port.name + "/" + label
+                                x_data, y_data, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15,label = port.name + "/" + label
                             )
 
                         else:

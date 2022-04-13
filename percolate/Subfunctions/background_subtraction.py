@@ -46,12 +46,18 @@ from percolate.framework import Function
 from percolate.toolkit.find_array_equivalent import find_array_equivalent
 from percolate.toolkit.check_values_in_range import check_values_in_range
 from percolate.toolkit.background1 import background1
+from percolate.toolkit.exponential_fit import exponential_decay
 from percolate.toolkit.Fit_inside_limits_polynomial import Fit_inside_limits_polynomial
 from percolate.toolkit.Fit_outside_limits_polynomial import (
     Fit_outside_limits_polynomial,
 )
 from percolate.toolkit.make_zero_array import make_zero_array
 
+option1 = "No fit"
+option2 = "Polynomial fit inside limits"
+option3 = "Polynomial fit outside limits"
+option4 = "exp decay (fits for all e < 'Background_start' and e > ' Background_end')"
+option5 = "2 point linear (straight line between 2 points)"
 
 class args_background:
     def __init__(self, parent):
@@ -75,16 +81,19 @@ class background_subtraction2(Function):
         # input.changed += self.on_data
         # parameter inputs
 
+
+        
+
         self.fit = choice_input(
             fn=self,
-            name="fit",
-            default="No fit",
+            name="Fitting options",
+            default=option1,
             choices=[
-                "No fit",
-                "Polynomial fit inside limits",
-                "Polynomial fit outside limits",
-                "exp decay (fits for all e < 'Background_start' and e > ' Background_end')",
-                "2 point linear (straight line between 2 points)",
+                option1,
+                option2,
+                option3,
+                option4,
+                option5,
             ],
         )
         self.apply_offset = choice_input(
@@ -167,14 +176,14 @@ class background_subtraction(Function):
 
         self.fit = choice_input(
             self,
-            "fit",
-            "No fit",
+            "Fitting options",
+            option1,
             [
-                "No fit",
-                "Polynomial fit inside limits",
-                "Polynomial fit outside limits",
-                "exp decay (fits for all e < 'Background_start' and e > ' Background_end')",
-                "2 point linear (straight line between 2 points)",
+                option1,
+                option2,
+                option3,
+                option4,
+                option5,
             ],
         )
         self.apply_offset = choice_input(
@@ -304,13 +313,13 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
 
     if x.ndim and y.ndim == 1:
 
-        if fit == "No fit":
+        if fit == option1:
 
             x = x
             background = make_zero_array(x)
             y = y - background
 
-        elif fit == "Polynomial fit inside limits":
+        elif fit == option2:
 
             x, y, background = Fit_inside_limits_polynomial(
                 x=x,
@@ -320,7 +329,7 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
                 power=power,
             )
 
-        elif fit == "Polynomial fit outside limits":
+        elif fit == option3:
 
             x, y, background = Fit_outside_limits_polynomial(
                 x=x,
@@ -329,6 +338,14 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
                 upperx=upperx,
                 power=power,
                 offset =offset,
+            )
+        elif fit == option4:
+
+            x, y, background = exponential_decay(
+                x=x,
+                y_in=y,
+                lower_limit=lowerx,
+                upper_limit=upperx,
             )
 
     elif x.ndim and y.ndim == 2:
@@ -382,6 +399,21 @@ def calculate_background(x, y, p_start, p_end, power, fit, offset):
                 background_list.append(backgroundi)
                 y_list.append(yi)
 
+        elif fit == option4:
+            for i in range(n_files):
+                xi, yi, backgroundi = exponential_decay(
+                    x=x[i],
+                    y_in=y[i],
+                    lower_limit=lowerx,
+                    upper_limit=upperx,
+                    a_offset1 = 0,
+                )
+
+                x_list.append(xi)
+                background_list.append(backgroundi)
+                y_list.append(yi)
+
+    
         x = np.array(x_list)
         y = np.array(y_list)
         background = np.array(background_list)

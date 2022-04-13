@@ -609,17 +609,17 @@ class MaxPlotControl(OutputControlBase):
                     pass
                 if self.datapoints and self.drawline:
                     self.panel.lines = self.a.plot(
-                        x, y, linestyle = linestyle[count%(len(linestyle))][1], color=colors[count], label=lbl[0] + " - " + str(port.name)
+                        x, y, linestyle = linestyle[count%(len(linestyle))][1], color=colors[count%len(colors)], label=lbl[0] + " - " + str(port.name)
                     )
-                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[-count], s=15,label = lbl[0] + " - " + str(port.name))
+                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15,label = lbl[0] + " - " + str(port.name))
 
                 elif self.drawline:
                     self.panel.lines = self.a.plot(
-                        x, y,linestyle = linestyle[count%(len(linestyle))][1], color=colors[count], label=lbl[0] + " - " + str(port.name)
+                        x, y,linestyle = linestyle[count%(len(linestyle))][1], color=colors[count%len(colors)], label=lbl[0] + " - " + str(port.name)
                     )
 
                 elif self.datapoints:
-                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[-count], s=15, label = lbl[0] + " - " + str(port.name))
+                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15, label = lbl[0] + " - " + str(port.name))
 
                 else:
                     pass
@@ -768,7 +768,7 @@ class MinimalPlotControl(OutputControlBase):
                 else:
                     pass
 
-                self.canvas.lines = a.plot(xi, yi, color=colors[count], label=label)
+                self.canvas.lines = a.plot(xi, yi, color=colors[count%len(colors)], label=label)
 
             if x.ndim == 3:
 
@@ -841,7 +841,7 @@ class FigureStack(OutputControlBase):
                 if len(x_axis) == 1:
                     pl.plot.axvline(x_axis, 0, 1)
                 else:
-                    pl.plot(x_axis, y_axis, color=colors[count], label=label)
+                    pl.plot(x_axis, y_axis, color=colors[count%len(colors)], label=label)
 
                 count = count + 1
         else:

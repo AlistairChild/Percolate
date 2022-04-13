@@ -38,7 +38,7 @@ class xmcdSample:
         # print(self.clock)
         # return self.ey/ (self.ioes-self.clock)
 
-        return self.ey / self.clock
+        return self.ey/(self.clock+self.ioes)
 
     def z_value(self):
         pass

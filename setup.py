@@ -14,6 +14,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=[
+        "setuptools >= 41.2.0",
         "numpy>=1.18.1",
         "scipy>=1.4.1",
         "wxPython>=4.1.0",

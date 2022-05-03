@@ -163,97 +163,18 @@ colors = ['#377eb8', '#ff7f00', '#4daf4a',
                   '#f781bf', '#a65628', '#984ea3',
                   '#999999', '#e41a1c', '#dede00']
 
-# colors = [
-#     "blue",
-#     "black",
-#     "brown",
-#     "red",
-#     "green",
-#     "orange",
-#     "turquoise",
-#     "pink",
-#     "blue",
-#     "black",
-#     "red",
-#     "green",
-#     "orange",
-#     "pink",
-#     "purple",
-#     "black",
-#     "red",
-#     "blue",
-#     "blue",
-#     "black",
-#     "brown",
-#     "red",
-#     "yellow",
-#     "green",
-#     "orange",
-#     "blue",
-#     "black",
-#     "brown",
-#     "red",
-#     "yellow",
-#     "green",
-#     "orange",
-#     "turquoise",
-#     "pink",
-#     "blue",
-#     "black",
-#     "red",
-#     "green",
-#     "orange",
-#     "pink",
-#     "purple",
-#     "black",
-#     "red",
-#     "blue",
-#     "blue",
-#     "black",
-#     "brown",
-#     "red",
-#     "yellow",
-#     "green",
-#     "orange",
-#     "blue",
-#     "black",
-#     "brown",
-#     "red",
-#     "yellow",
-#     "green",
-#     "orange",
-#     "turquoise",
-#     "pink",
-#     "blue",
-#     "black",
-#     "red",
-#     "green",
-#     "orange",
-#     "pink",
-#     "purple",
-#     "black",
-#     "red",
-#     "blue",
-#     "blue",
-#     "black",
-#     "brown",
-#     "red",
-#     "yellow",
-#     "green",
-#     "orange",
-# ]
-
 def exists_in_list(list, item):
-
+    '''Returns true if item found in list'''
     for entry in list:
         if entry == item:
             return True
 
 def exists_in_dict(dict, item):
-
+    '''Returns true if item found in dictionary'''
     for key, value in dict.items():
         if key == item:
             return True
+
 # GUI
 class InputControlBase(Function):
     def __init__(self, target_port, name="source"):
@@ -323,42 +244,43 @@ class MyDropTarget(wx.TextDropTarget):
         self.parent = parent
 
     def OnDropText(self, x, y, data):
-        #06/03/2022
-        #port = self.app.lookup_port(data)
-
+        print(data)
         port = self.app.lookup_port(data)
-        print(port.name)
-        
-        print(port.read().get("label"))
+        print("Port: '%s' containes files : '%s'"%(port.name,port.read().get("label")))
         self.parent.DisplayData(port)
         self.parent.DisplayPorts(port)
 
         return True
 
+class PlotPanel(wx.Panel):
+
+    def __init__(self, parent, fgs, port, aui_notebook, manager, app):
+
+        super().__init__(parent, name = "PlotPanel(%s)" % port.name)
+
 
 class MaxPlotControl(OutputControlBase):
-
+    
     def __init__(self, parent, port, aui_notebook, manager, app):
 
         # dictionary for plots
         self._dict = {}
+
+        #coordinates of mouse
         self.xcoord = None
         self.ycoord = None
-        # parent is the main frame
-        self.panel = wx.Panel(app.main_frame)
-        self.panel.menubar = wx.MenuBar()
 
-        #fetch funcitons from Function directory
-        self.panel.functionMenu = wx.Menu()
+        # parent is the main frame
+        self.panel = wx.Panel(app.main_frame, size=wx.Size(400,400))
 
         self.datarequest = wx.CheckBox(self.panel, label="Show data points")
+        self.datarequest.SetValue(False)
         self.linerequest = wx.CheckBox(self.panel, label="Show line")
-        self.legendrequest = wx.CheckBox(self.panel, label="Show Legend")
-        self.guidelinesrequest = wx.CheckBox(self.panel, label="Show Guidelines")
-
-        # ititial conditions
         self.linerequest.SetValue(True)
+        self.legendrequest = wx.CheckBox(self.panel, label="Show Legend")
         self.legendrequest.SetValue(True)
+        #does nothing
+        self.guidelinesrequest = wx.CheckBox(self.panel, label="Show Guidelines")
         self.guidelinesrequest.SetValue(True)
 
         cbxsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -376,8 +298,8 @@ class MaxPlotControl(OutputControlBase):
         fgs = wx.FlexGridSizer(4, 1, 10, 10)
 
         self.panel.fig = Figure((5, 3), 75)
-        self.a = self.panel.fig.add_subplot(111)
-        self.a.grid(False)
+        self.panel.subplots = self.panel.fig.add_subplot(111)
+        
         self.coord = self.panel.fig.text(0.13,0.12, 'x:%1.4s, y:%1.4s'%(self.xcoord , self.ycoord))
         self.animation = animation.ArtistAnimation(self.panel.fig, [(self.coord,)])
         self.panel.fig.canvas = FigureCanvas(self.panel, -1, self.panel.fig)
@@ -407,7 +329,7 @@ class MaxPlotControl(OutputControlBase):
         fgs.AddGrowableRow(0, 7)
         fgs.AddGrowableCol(0, 1)
 
-        hbox.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND, border=15)
+        hbox.Add(fgs, proportion=1, flag=wx.ALL | wx.EXPAND | wx.FIXED_MINSIZE, border=15)
         self.panel.SetSizer(hbox)
 
         self.panel.Bind(wx.EVT_CHECKBOX, self.on_data_point_request, self.datarequest)
@@ -512,7 +434,7 @@ class MaxPlotControl(OutputControlBase):
         
         
         # clear figure
-        self.a.clear()
+        self.panel.subplots.clear()
 
         # we need to accompany multiple different ports
         count = 0
@@ -538,7 +460,7 @@ class MaxPlotControl(OutputControlBase):
         
                                 if line:
             
-                                    self.panel.lines = self.a.axvline(line, 0, 1)
+                                    self.panel.lines = self.panel.subplots.axvline(line, 0, 1)
         
                     except:
         
@@ -546,12 +468,12 @@ class MaxPlotControl(OutputControlBase):
 
                     if len(x) != len(y):
                         y = "".join(y)
-                        self.panel.lines = self.a.plot(
+                        self.panel.lines = self.panel.subplots.plot(
                             x_data, y_data, color=colors[count%len(colors)], label = y, picker=2
                         )
                     else:
                         if self.datapoints and self.drawline:
-                            self.panel.lines = self.a.plot(
+                            self.panel.lines = self.panel.subplots.plot(
                                 x_data,
                                 y_data,
                                 linestyle = linestyle[count%(len(linestyle))][1],
@@ -559,12 +481,12 @@ class MaxPlotControl(OutputControlBase):
                                 label = port.name + "/" + label,
                                 picker=2
                             )
-                            self.a.scatter(
+                            self.panel.subplots.scatter(
                                 x_data, y_data, marker=markers[count%(len(markers))], color =colors[count%len(colors)], s=15, label = port.name + "/" + label
                             )
 
                         elif self.drawline:
-                            self.panel.lines = self.a.plot(
+                            self.panel.lines = self.panel.subplots.plot(
                                 x_data,
                                 y_data,
                                 linestyle = linestyle[count%(len(linestyle))][1],
@@ -574,7 +496,7 @@ class MaxPlotControl(OutputControlBase):
                             )
 
                         elif self.datapoints:
-                            self.a.scatter(
+                            self.panel.subplots.scatter(
                                 x_data, y_data, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15,label = port.name + "/" + label
                             )
 
@@ -582,19 +504,19 @@ class MaxPlotControl(OutputControlBase):
                             pass
 
                     lines_labels = [
-                        self.a.get_legend_handles_labels() for a in self.panel.fig.axes
+                        self.panel.subplots.get_legend_handles_labels() for a in self.panel.fig.axes
                     ]
 
                     lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
 
                     if self.legend:
 
-                        self.a.legend(lines, labels)
+                        self.panel.subplots.legend(lines, labels)
 
-                        self.a.legend()
+                        self.panel.subplots.legend()
 
             else:
-                #self.a.format_coords = format_coord
+                #self.panel.subplots.format_coords = format_coord
 
                 try:
 
@@ -602,31 +524,31 @@ class MaxPlotControl(OutputControlBase):
     
                         if line:
     
-                            self.panel.lines = self.a.axvline(line, 0, 1)
+                            self.panel.lines = self.panel.subplots.axvline(line, 0, 1)
     
                 except:
     
                     pass
                 if self.datapoints and self.drawline:
-                    self.panel.lines = self.a.plot(
+                    self.panel.lines = self.panel.subplots.plot(
                         x, y, linestyle = linestyle[count%(len(linestyle))][1], color=colors[count%len(colors)], label=lbl[0] + " - " + str(port.name)
                     )
-                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15,label = lbl[0] + " - " + str(port.name))
+                    self.panel.subplots.scatter(x, y, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15,label = lbl[0] + " - " + str(port.name))
 
                 elif self.drawline:
-                    self.panel.lines = self.a.plot(
+                    self.panel.lines = self.panel.subplots.plot(
                         x, y,linestyle = linestyle[count%(len(linestyle))][1], color=colors[count%len(colors)], label=lbl[0] + " - " + str(port.name)
                     )
 
                 elif self.datapoints:
-                    self.a.scatter(x, y, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15, label = lbl[0] + " - " + str(port.name))
+                    self.panel.subplots.scatter(x, y, marker=markers[count%(len(markers))], color=colors[count%len(colors)], s=15, label = lbl[0] + " - " + str(port.name))
 
                 else:
                     pass
 
                 if self.legend:
 
-                    self.a.legend()
+                    self.panel.subplots.legend()
                     
         
         
@@ -715,6 +637,7 @@ class MinimalPlotControl(OutputControlBase):
         else:
             self.dragged = self.port
             my_data = wx.TextDataObject(str(self.port.get_path()))
+            print(str(self.port.get_path()))
             dragsource = wx.DropSource(self.canvas)
             dragsource.SetData(my_data)
             result = dragsource.DoDragDrop(True)
@@ -1341,8 +1264,8 @@ class MyApp(wx.App):
 
 
         # create aui manager
-        self.main_frame.__auiManager = aui.AuiManager()
-        self.main_frame.__auiManager.SetManagedWindow(self.main_frame)
+        self.__auiManager = aui.AuiManager()
+        self.__auiManager.SetManagedWindow(self.main_frame)
 
         # create menubar
         self.main_frame.menubar = wx.MenuBar()
@@ -1363,7 +1286,7 @@ class MyApp(wx.App):
         #add to menubar
         self.main_frame.SetMenuBar(self.main_frame.menubar)
 
-        #create a funciton control for the func ctrl trees to sit
+        #create a function control for the func ctrl trees to sit
         self.main_frame.function_control["Function Ctrl"] = aui.AuiNotebook(self.main_frame)
         self.main_frame.function_control["Function Ctrl"].SetAGWWindowStyleFlag(
             aui.AUI_NB_SCROLL_BUTTONS
@@ -1382,7 +1305,7 @@ class MyApp(wx.App):
             | aui.AUI_NB_TAB_EXTERNAL_MOVE
         )
 
-        self.main_frame.__auiManager.AddPane(
+        self.__auiManager.AddPane(
             self.main_frame.function_control["Function Ctrl"],
             aui.AuiPaneInfo()
             .Name("Function Ctrl")
@@ -1393,7 +1316,7 @@ class MyApp(wx.App):
         )
 
         # add panes to the manager to sort out display
-        self.main_frame.__auiManager.AddPane(
+        self.__auiManager.AddPane(
             self.main_frame.function_control["Function view"],
             aui.AuiPaneInfo()
             .Name("Function view")
@@ -1404,7 +1327,7 @@ class MyApp(wx.App):
         )
 
         # update to let the manager know about changes
-        self.main_frame.__auiManager.Update()
+        self.__auiManager.Update()
 
         # Bind handlers to controls
         self.main_frame.Bind(wx.EVT_CLOSE, self.WindowOnClose)
@@ -1415,12 +1338,12 @@ class MyApp(wx.App):
 
         self.main_frame.PlotMenu.Bind(wx.EVT_MENU, self.On_Create_MaxPlot)
 
-        self.main_frame.__auiManager.Bind(aui.EVT_AUI_PANE_CLOSE, self.on_pane_close)
+        self.__auiManager.Bind(aui.EVT_AUI_PANE_CLOSE, self.on_pane_close)
         self.main_frame.function_control["Function view"].Bind(
             aui.EVT_AUINOTEBOOK_PAGE_CLOSED, self.on_tab_close
         )
 
-        # self.main_frame.__auiManager.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.on__close)
+        # self.__auiManager.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.on__close)
         self.func =None
         self.count = 0
         self.addedtabs = dict()
@@ -1445,16 +1368,16 @@ class MyApp(wx.App):
         )
         application.create_controls(application.func, control_root)
         
-        if application.main_frame.__auiManager.GetPane(application.func.name).IsOk():   
+        if self.__auiManager.GetPane(application.func.name).IsOk():   
         
             print("Function with this name already exists")
             
         
         else:
-            if application.main_frame.__auiManager.GetPane("Function view").IsOk():
+            if self.__auiManager.GetPane("Function view").IsOk():
 
-                application.main_frame.__auiManager.GetPane("Function view").caption = application.func.name
-                application.main_frame.__auiManager.GetPane("Function view").name = application.func.name
+                self.__auiManager.GetPane("Function view").caption = application.func.name
+                self.__auiManager.GetPane("Function view").name = application.func.name
                 application.main_frame.function_control = application.main_frame.function_control["Function view"]
 
         
@@ -1463,7 +1386,7 @@ class MyApp(wx.App):
                 addedtab = FuncCtrl(
                     application.main_frame.function_control,
                     application.func.subfns[0],
-                    application.main_frame.__auiManager,
+                    self.__auiManager,
                     application,
                     application.func.subfns[0].name,
                 )
@@ -1474,7 +1397,7 @@ class MyApp(wx.App):
                     application.addedtabs[application.func.subfns[0].name],
                     caption=application.func.subfns[0].name,
                 )
-        application.main_frame.__auiManager.Update()
+        self.__auiManager.Update()
 
         # create loop
         application.MainLoop()
@@ -1521,12 +1444,12 @@ class MyApp(wx.App):
                 evt_name = evt_name + "1"
         
         
-        if self.main_frame.__auiManager.GetPane(self.func.name).IsOk():
+        if self.__auiManager.GetPane(self.func.name).IsOk():
         
             self.addedtabs[evt_name] = FuncCtrl(
                 self.main_frame.function_control,
                 evt_data,
-                self.main_frame.__auiManager,
+                self.__auiManager,
                 self,
                 evt_name,
             )
@@ -1548,11 +1471,11 @@ class MyApp(wx.App):
             self,
             canvas_id,
             self.main_frame.function_control,
-            self.main_frame.__auiManager,
+            self.__auiManager,
             self,
         )
 
-        self.main_frame.__auiManager.AddPane(
+        self.__auiManager.AddPane(
             self.canvas_dict[canvas_id].panel,
             aui.AuiPaneInfo()
             .Name(canvas_id)
@@ -1562,7 +1485,7 @@ class MyApp(wx.App):
             .Float(),
         )
 
-        self.main_frame.__auiManager.Update()
+        self.__auiManager.Update()
 
     def lookup_port(self, path):
         print("function name " + self.func.name)

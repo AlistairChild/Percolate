@@ -17,8 +17,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
-
+from scipy import signal
 import numpy as np
+
 from percolate.framework import Port
 from percolate.framework import InPort
 from percolate.framework import OutPort
@@ -40,33 +41,35 @@ from percolate.framework import Function
 from percolate.framework import Edge
 from percolate.framework import CompositeFn
 
+from percolate.Functions.Sin_Gen import SinGen
+from percolate.Functions.Square_Gen import SquareGen
+from percolate.Subfunctions.Convolve import convolve
+from percolate.Subfunctions.Addition import addition
+
 # Applications Functions
-class SinGen(Function):
+class SinSquareConv(CompositeFn):
     """
-    This create a sin function where the user can alter the frequency and amplitude
+    This Function contains 3 Subfunctions allowing a sin wave to be convolved with a square wave.
+
     """
 
-    def __init__(self, parent = None, name = "SinGen"):
+    def __init__(self):
 
-        super().__init__(parent, name)
-        
-        # ports
-        self.period = free_int_input(self, "period", 1, 2, 12)
-        self.amplitude = free_int_input(self, "Amplitude", 1, 1, 4)
-        self.phase = free_int_input(self, "Phase degree", 0, 1, 360)
-        
-        self.sin = ArrayOutput(self, "sin", self.read_sin)
+        super().__init__(None, "SinSquareConv")
 
-    def evaluate(self):
+        # subfunctions used in this function
+        sin1 = SinGen(self, name = "SinGen1")
+        sin2 = SinGen(self,  name = "SinGen2")
+        conv = addition(self)
 
-        self.time = np.linspace(0, 12.0, 500)
-        self.sin_calc = self.amplitude.default * np.sin(
-            (2 * np.pi *  self.time)/self.period.default + ((self.phase.default*np.pi)/180)
-        )
-        self.lines = None
+        # subfns
+        self.subfns.append(sin1)
+        self.subfns.append(sin2)
+        self.subfns.append(conv)
 
-    def read_sin(self):
-        return {"data": [self.time, self.sin_calc, self.lines], "label": "s"}
+        # edges used for passing data from the output of one function to the input of another
+        self.edges.append(Edge(sin1.sin, conv.A))
+        self.edges.append(Edge(sin2.sin, conv.B))
 
 
-function = SinGen()
+function = SinSquareConv()

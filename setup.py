@@ -20,8 +20,7 @@ setup(
         "matplotlib>=3.1.2",
         "lmfit>=1.0.0",
         "pandas>=1.1.4",
-        
-        
+        "scipy>=1.4.1",
     ],  # more
     classifiers=[
         "Programming Language :: Python :: 3",

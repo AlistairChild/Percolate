@@ -7,6 +7,8 @@ Percolate allows users to build and use a network of functions. Any update to a 
 
 
 ## Installation
+### Windows
+
 To install percolate open the command line and type
 ```
 python -m pip install git+https://github.com/AlistairChild/Percolate.git
@@ -15,10 +17,28 @@ To run the GUI type
 ```
 percolate
 ```
-Linux distributions may experience difficulties with installing wxpython, you could try;
+### Linux
+Linux distributions may experience difficulties with installing wxpython, try;
 ```
 pip install -U     -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04     wxPython 
 ```
+then follow windows instructions.
+
+### MacOS
+There seems to be a bug specific to macOS and wxpython;
+"
+This program needs access to the screen. Please run with a Framework
+build of python, and only when you are logged in on the main display
+of your Mac.
+".
+A work around to this is to open terminal after installing percolate and type;
+```
+which percolate 
+```
+```
+pythonw $(addr returned from 'which percolate' command) 
+```
+
 ## Keywords
 The text that follows will use the following keywords.
 

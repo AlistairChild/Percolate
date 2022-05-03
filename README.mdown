@@ -25,6 +25,7 @@ pip install -U     -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ub
 then follow windows instructions.
 
 ### MacOS
+Follow the Windows instructions.\
 There seems to be a bug specific to macOS and wxpython;
 "
 This program needs access to the screen. Please run with a Framework

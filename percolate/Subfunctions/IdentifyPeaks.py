@@ -168,8 +168,11 @@ class IdentifyPeaks(Function):
         self.input_array = StreamInput(self, "input_array")
 
         
-        
-        self.peak_params = GridInput(self, "peak_params")
+        self.headers_titles = ["Center of peak", "Type", "Height", "Sigma"]
+        self.col_input_type = ["number","choice","number","number"]
+        self.choices = ["GaussianModel","LorentzianModel","VoigtModel"]
+
+        self.peak_params = GridInput(self, "peak_params", self.headers_titles, self.col_input_type, self.choices)
         
         # output ports
         self.guide = ArrayOutput(self, "guide", self.read_guide)

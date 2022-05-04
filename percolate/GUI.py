@@ -1079,36 +1079,52 @@ class GridControl(InputControlBase):
     
         self.target_port = target_port
         
-        print(parent.fgs.GetSize())
         
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
         # print(self.port.max)
 
         self.ctrl = wx.grid.Grid(parent, name = target_port.name)
         self.ctrl.name = self.target_port.name
-        self.ctrl.CreateGrid(20, 4)
+        self.ctrl.CreateGrid(10,  len(target_port.headers_titles))
 
         #self.ctrl.GetColSizes()
-        #self.ctrl.SetDefaultRowSize(20)
+       
+        self.ctrl.SetDefaultRowSize(30)
         self.ctrl.SetDefaultColSize(250)
 
-        
-        self.ctrl.SetColLabelValue(0, "Center of peak")
-        self.ctrl.SetColLabelValue(1, "Type")
-        self.ctrl.SetColLabelValue(2, "Height")
-        self.ctrl.SetColLabelValue(3, "Sigma")
+        #types of cell attr
+        choice_attr = wx.grid.GridCellAttr()
+        num_attr = wx.grid.GridCellAttr()
+        num_attr.SetEditor(wx.grid.GridCellFloatEditor())
+        num_attr.SetRenderer(wx.grid.GridCellFloatRenderer())
+
+
+        #iterate through headers
+        for i in range(len(target_port.headers_titles)):
+            self.ctrl.SetColLabelValue(i, target_port.headers_titles[i])
+            if target_port.col_input_type[i] == "number":
+                self.ctrl.SetColAttr(i,num_attr)
+            elif target_port.col_input_type[i] == "choice":
+                choice_attr.SetEditor(wx.grid.GridCellChoiceEditor(target_port.choices))
+                self.ctrl.SetColAttr(i,choice_attr)
+
         
         #sizer.Add(panel, 1, wx.EXPAND)
         
-        fgs.Add(self.ctrl , 0, wx.EXPAND)
+        fgs.Add(self.ctrl , 1, wx.EXPAND)
+
+        
 
         self.ctrl.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_value)
+
+
 
     def on_value(self, evt):
     
         col = evt.GetCol()
         row = evt.GetRow()
-        
+        print("changed")
         #put data into grid object
         self.target_port.grid[row][col] = self.ctrl.GetCellValue(row,col)
         
@@ -1185,6 +1201,7 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
             self, parent=aui_notebook
         )  # panel sits in __auinotebook
         self.func = func
+        self.manager = manager
         # self.control_panel = wx.lib.scrolledpanel.ScrolledPanel(self,-1, size=(600,400), pos=(0,28), style=wx.SIMPLE_BORDER)
 
         # scrolled window
@@ -1213,8 +1230,10 @@ class FuncCtrl(wx.lib.scrolledpanel.ScrolledPanel):
         self.fgs.AddGrowableCol(1, 1)
 
         hbox.Add(self.fgs, proportion=2, flag=wx.ALL | wx.EXPAND, border=15)
-
+        
         self.SetSizer(hbox)
+        print("size" + str(hbox.GetSize()))
+        print("size" + str(self.fgs.GetSize()))
 
     def add_node(parent_node, fn):
         if isinstance(fn, Compositefn):

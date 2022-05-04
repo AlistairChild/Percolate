@@ -158,10 +158,14 @@ class num_input(InPort):
         self.default = default
         
 class GridInput(InPort):
-    def __init__(self, fn, name):
+    def __init__(self, fn, name, headers, input_type, choices):
 
         super().__init__(fn, name)
-        
+
+        self.headers_titles = headers
+        self.col_input_type = input_type
+        self.choices = choices
+
         self.grid = [[None for x in range(4)] for y in range(20)]
 
 class free_int_input(InPort):
